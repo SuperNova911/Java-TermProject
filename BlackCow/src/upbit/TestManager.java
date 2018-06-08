@@ -1,5 +1,14 @@
 package upbit;
 
+import java.util.LinkedList;
+
+import org.json.simple.JSONObject;
+
+import com.google.common.util.concurrent.CycleDetectingLockFactory;
+
+import upbit.JsonManager.JsonKey;
+import upbit.Request.TermType;
+
 public class TestManager
 {
 	public static void main(String[] args)
@@ -78,6 +87,67 @@ public class TestManager
 //		kappa();
 		
 		
+//		System.out.println(Request.Upbit.createUrl(Market.KRW, CoinSymbol.XRP, TermType.minutes, 1, 1));
+//		System.out.println(Request.Upbit.createUrl(Market.KRW, CoinSymbol.XRP, TermType.days, 1, 1));
+//		System.out.println(Request.Upbit.createUrl(Market.KRW, CoinSymbol.XRP, TermType.weeks, 1, 1));
+//		System.out.println(Request.Upbit.createUrl(Market.KRW, CoinSymbol.XRP, TermType.months, 1, 1));
+//		
+//
+//		System.out.println(JsonManager.parse(Request.request(Request.Upbit.createUrl(Market.KRW, CoinSymbol.XRP, TermType.minutes, 1, 1))));
+//		System.out.println(JsonManager.parse(Request.request(Request.Upbit.createUrl(Market.KRW, CoinSymbol.XRP, TermType.days, 1, 1))));
+//		System.out.println(JsonManager.parse(Request.request(Request.Upbit.createUrl(Market.KRW, CoinSymbol.XRP, TermType.weeks, 1, 1))));
+//		System.out.println(JsonManager.parse(Request.request(Request.Upbit.createUrl(Market.KRW, CoinSymbol.XRP, TermType.months, 1, 1))));
+		
+		
+		LinkedList<JSONObject> list = JsonManager.parse(Request.request(Request.Upbit.createUrl(Market.KRW, CoinSymbol.XRP, TermType.minutes, 1, 10)));
+		
+		CryptoCurrency coin1 = new CryptoCurrency(list, "리플", Market.KRW, CoinSymbol.XRP, TermType.minutes);
+		
+		for (JSONObject jsonObject : coin1.getObjectList())
+		{
+			//System.out.println(jsonObject.toString());
+			System.out.println(JsonManager.getData(jsonObject, JsonKey.timestamp));
+		}
+		System.out.println("--------------------------------------");
+		
+		list = JsonManager.parse(Request.request(Request.Upbit.createUrl(Market.KRW, CoinSymbol.XRP, TermType.minutes, 1, 10)));
+		
+		coin1.getObjectList().clear();
+
+		list.remove(9);
+		list.remove(8);
+		list.remove(7);
+		
+		coin1.addData(list);
+		
+		
+		for (JSONObject jsonObject : coin1.getObjectList())
+		{
+			System.out.println(JsonManager.getData(jsonObject, JsonKey.timestamp));
+		}
+		System.out.println("--------------------------------------");
+
+		list = JsonManager.parse(Request.request(Request.Upbit.createUrl(Market.KRW, CoinSymbol.XRP, TermType.minutes, 1, 10)));
+		coin1.addData(list);
+		
+		
+		for (JSONObject jsonObject : coin1.getObjectList())
+		{
+			System.out.println(JsonManager.getData(jsonObject, JsonKey.timestamp));
+		}
+		
+		
+		ObjectIO.createDirectory("crypto");
+		ObjectIO.Coin.save(coin1, "./crypto/" + coin1.getName());
+		
+		CryptoCurrency coin2 = ObjectIO.Coin.load("./crypto/리플");
+		
+		System.out.println("--------------------------------------");
+		
+		for (JSONObject jsonObject : coin2.getObjectList())
+		{
+			System.out.println(jsonObject.toString());
+		}
 	}
 	
 	public static void kappa()

@@ -2,6 +2,7 @@ package upbit;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import org.json.simple.JSONArray;
 
@@ -10,11 +11,11 @@ import upbit.Request.TermType;
 
 public class Upbit
 {
-	private ArrayList<JSONArray> jsonArrayList;
+	private ArrayList<CryptoCurrency> cryptoList;
 
 	public Upbit()
 	{
-		jsonArrayList = new ArrayList<JSONArray>();
+		cryptoList = new ArrayList<CryptoCurrency>();
 		createJsonDirectory();
 	}
 	
