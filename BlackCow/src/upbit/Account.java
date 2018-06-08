@@ -6,13 +6,13 @@ public class Account
 {
 	private String id;
 	private String password;
-	private int KRW;
+	private long KRW;
 	
 	private ArrayList<Wallet> walletList;
 	
 	
 	// 로그인 기능 구현
-	public Account(String id, String password, int KRW)
+	public Account(String id, String password, long KRW)
 	{
 		this.id = id;
 		this.password = password;
@@ -143,13 +143,16 @@ public class Account
 		return walletList;
 	}
 	
-	public int getKRW()
+	public long getKRW()
 	{
 		return KRW;
 	}
 	
-	public void setKRW(int KRW)
+	public void setKRW(long KRW)
 	{
+		if (KRW < 0)
+			KRW = 0;
+		
 		this.KRW = KRW;
 	}
 }
