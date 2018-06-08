@@ -20,7 +20,6 @@ public class Request
 	public static String request(String urlAddress)
 	{
 		URL url;
-		String result;
 		
 		try
 		{
@@ -28,15 +27,28 @@ public class Request
 			URLConnection urlConn = url.openConnection();
 			BufferedReader br = new BufferedReader(new InputStreamReader(urlConn.getInputStream()));
 
-			result = br.readLine();
+			return br.readLine();
 		} 
 		catch (IOException e)
 		{
-			System.out.println("Failed to request: " + urlAddress);
-			result = "RQ_FAIL";
+			System.out.println("Failed to request, try again: " + urlAddress);
+			
+			try
+			{
+				url = new URL(urlAddress);
+				URLConnection urlConn = url.openConnection();
+				BufferedReader br = new BufferedReader(new InputStreamReader(urlConn.getInputStream()));
+
+				return br.readLine();
+			}
+			catch (IOException e1)
+			{
+				System.out.println("Failed to request:" + urlAddress);
+				e1.printStackTrace();
+			}
+			
+			return "RQ_FAIL";
 		}
-		
-		return result;
 	}
 	
 	
