@@ -3,6 +3,7 @@ package upbit;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.LinkedList;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -14,31 +15,32 @@ public class JsonManager
 	public enum JsonKey
 	{
 		code, candleDateTime, candleDateTimeKst, openingPrice, highPrice, lowPrice, 
-		tradePrice, candleAccTradeVolume, candleAccTradePrice, timestamp, prevClosingPrice, 
-		change, changePrice, changeRate, signedChangePrice, signedChangeRate
+		tradePrice, candleAccTradeVolume, candleAccTradePrice, timestamp, 
+		
+		prevClosingPrice, change, changePrice, changeRate, signedChangePrice, signedChangeRate
 	}
 	
-	public static JSONArray parse(String data)
+	public static LinkedList<JSONObject> parse(String data)
 	{
+		LinkedList<JSONObject> objectList = new LinkedList<>();
 		JSONArray jsonArray = new JSONArray();
 		JSONParser jsonParser = new JSONParser();
 		
 		try
 		{
 			jsonArray = (JSONArray) jsonParser.parse(data);
-			
-//			for (int i = 0; i < jsonArray.size(); i++)
-//			{
-//				jsonObj = (JSONObject)jsonArray.get(i);
-//				System.out.println(jsonObj.get("candleDateTimeKst"));
-//			}
+
+			for (int index = 0; index < jsonArray.size(); index++)
+			{
+				objectList.addFirst(getObject(jsonArray, index));
+			}
 		}
 		catch (ParseException e)
 		{
 			e.printStackTrace();
 		}
 		
-		return jsonArray;
+		return objectList;
 	}
 	
 	public static void save(JSONArray array, String name)
@@ -76,39 +78,28 @@ public class JsonManager
 		return jsonArray;
 	}
 	
-	// 임시
-	public static CryptoCurrency assign(JSONArray jsonArray)
-	{
-		JSONObject jsonObject = (JSONObject) jsonArray.get(0);
-		
-		CryptoCurrency coin = new CryptoCurrency(jsonObject);
-		
-		return coin;
-	}
-	
 	public static String getData(JSONObject jsonObject, JsonKey jsonKey)
 	{
 		try
 		{
 			return jsonObject.get(jsonKey.toString()).toString();
 		}
-		catch (Exception e)
+		catch (NullPointerException e)
 		{
-			System.out.println("ERROR JsonManager.getData(): " + jsonKey.toString());
-			return "error";
-		}	
+			System.out.println("Failed to getData, jsonKey: " + jsonKey);
+			e.printStackTrace();
+			
+			return "";
+		}
 	}
 	
-	// 보완 하기
-	public static JSONObject getObject(JSONArray jsonArray)
+	public static String getData(CryptoCurrency cryptoCurrency, JsonKey jsonKey, int index)
 	{
-		return (JSONObject) jsonArray.get(0);
+		return getData(cryptoCurrency.getJsonObject(index), jsonKey);
 	}
 	
-	public static JSONArray addJsonObject(JSONArray target, JSONArray input)
+	public static JSONObject getObject(JSONArray jsonArray, int index)
 	{
-		
-		
-		return target;
+		return (JSONObject) jsonArray.get(index);
 	}
 }
