@@ -55,6 +55,8 @@ public class TestWB_J extends JFrame {
 	 * Create the frame.
 	 */
 	public TestWB_J() {
+		setTitle("\uBE14\uB799\uB9D0\uB791\uCE74\uC6B0");
+		setResizable(false);
 		setSize(new Dimension(1280, 720));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 1280, 720);
@@ -274,7 +276,7 @@ public class TestWB_J extends JFrame {
 		panel_5.add(label_7);
 		
 		JPanel panel_6 = new JPanel();
-		panel_6.setBounds(0, 10, 299, 671);
+		panel_6.setBounds(0, 10, 300, 671);
 		contentPane.add(panel_6);
 		panel_6.setLayout(null);
 		
