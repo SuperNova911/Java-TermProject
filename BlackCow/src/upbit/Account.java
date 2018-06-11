@@ -2,6 +2,8 @@ package upbit;
 
 import java.util.ArrayList;
 
+import upbit.CoinList.CoinSymbol;
+
 public class Account
 {
 	private String id;
@@ -45,15 +47,6 @@ public class Account
 			System.out.println("Failed to remove wallet: " + coinSymbol);
 		
 		return false;
-		
-//		for (int i = 0; i < walletList.size(); i++)
-//		{
-//			if (walletList.get(i).getCoinSymbol() == coinSymbol)
-//			{
-//				walletList.remove(i);
-//				return true;
-//			}
-//		}
 	}
 	
 	public Wallet searchWallet(CoinSymbol coinSymbol)
@@ -67,21 +60,6 @@ public class Account
 		System.out.println("Failed to searchWallet: " + coinSymbol);
 		
 		return null;
-		
-//		try
-//		{
-//			for (Wallet wallet : walletList)
-//			{
-//				if (wallet.getCoinSymbol() == coinSymbol)
-//					return wallet;
-//			}
-//		}
-//		catch (NullPointerException e) 
-//		{
-//			e.getMessage();
-//		}
-//		System.out.println("Failed to find wallet: " + coinSymbol);
-//		return null;
 	}
 	
 	public boolean checkWallet(CoinSymbol coinSymbol)
@@ -128,6 +106,18 @@ public class Account
 		return true;
 	}
 	
+	public void addKRW(long KRW)
+	{
+		this.KRW += KRW;
+	}
+	
+	public void subtractKRW(long KRW)
+	{
+		this.KRW -= KRW;
+	}
+	
+	
+	//Getter, Setter
 	public double getBalance(CoinSymbol coinSymbol)
 	{
 		Wallet wallet = searchWallet(coinSymbol);
