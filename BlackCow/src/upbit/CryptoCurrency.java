@@ -5,6 +5,9 @@ import java.util.LinkedList;
 
 import org.json.simple.JSONObject;
 
+import upbit.CoinList.CoinNameKR;
+import upbit.CoinList.CoinSymbol;
+import upbit.CoinList.Market;
 import upbit.JsonManager.JsonKey;
 import upbit.Request.TermType;
 
@@ -13,29 +16,34 @@ public class CryptoCurrency implements Serializable
 	private LinkedList<JSONObject> objectList;
 	
 	private String name;
+	private String nameKR;
+	private String nameUS;
 	private boolean byMinute = false;
 
 	private Market market;
 	private CoinSymbol coinSymbol;
 	private TermType termType;
 	
-	public CryptoCurrency(LinkedList<JSONObject> list, String name, Market market, CoinSymbol coinSymbol, TermType termType)
+	public CryptoCurrency(LinkedList<JSONObject> list, Market market, CoinSymbol coinSymbol, TermType termType)
 	{
 		this.setObjecList(list);
-		this.setName(name);
 		this.setMarket(market);
 		this.setCoinSymbol(coinSymbol);
 		this.setTermType(termType);
+		
+		this.name = market + "-" + coinSymbol + "-" + termType;
+		this.setLocalName();
 	}
 
 	public void addData(LinkedList<JSONObject> list)
-	{
+	{		
 		int index = 0;
 		long base, input;
 		boolean success = true;
 		
 		for (JSONObject inputObject : list)
 		{
+			//System.out.println("새로운 값");
 			input = Long.parseLong(JsonManager.getData(inputObject, JsonKey.timestamp));
 			
 			if (success == true)
@@ -44,28 +52,70 @@ public class CryptoCurrency implements Serializable
 
 				for (; index < objectList.size(); index++)
 				{
-					base = Long.parseLong(JsonManager.getData(objectList.get(index), JsonKey.timestamp));
-					
-					if (input < base)
-					{
-						objectList.add(index, inputObject);
-						success = true;
-						break;
-					}
+					//System.out.println("새로운 인덱스");
+					base = Long.parseLong(getData(JsonKey.timestamp, index));
+
+					//System.out.println(getData(JsonKey.candleDateTime, index) + " " + getData(JsonKey.timestamp, index));
+					//System.out.println(JsonManager.getData(inputObject, JsonKey.candleDateTime) + " " + JsonManager.getData(inputObject, JsonKey.timestamp));
 					
 					if (input == base)
 					{
+						//System.out.println("same");
 						success = true;
+						index++;
 						break;
 					}
+					
+					if (getData(JsonKey.candleDateTime, index).equals(JsonManager.getData(inputObject, JsonKey.candleDateTime)))
+					{
+						//System.out.println("시간만 같음, 업데이트!");
+						objectList.set(index, inputObject);
+						success = true;
+						index++;
+						break;
+					}
+					
+					if (input > base)
+					{
+						//System.out.println("add front");
+						objectList.add(index, inputObject);
+						success = true;
+						index++;
+						break;
+					}
+					
+					//System.out.println("해당없슴");
 				}
 			}
 			
 			if (success == false)
+			{
+
 				objectList.addLast(inputObject);
+				//System.out.println("add last");
+			}
 		}
 	}
 	
+	public void setLocalName()
+	{
+		int index = 0;
+		int target = this.coinSymbol.ordinal();
+		
+		for (CoinNameKR coinNameKR : CoinNameKR.values())
+		{
+			if (index == target)
+			{
+				setNameKR(coinNameKR.toString());
+				break;
+			}
+			
+			index++;
+		}
+	}
+	
+	
+	// Getter, Setter
 	public String getData(JsonKey jsonKey)
 	{
 		return getData(jsonKey, 0);
@@ -143,5 +193,25 @@ public class CryptoCurrency implements Serializable
 			byMinute = true;
 		else
 			byMinute = false;
+	}
+
+	public String getNameKR()
+	{
+		return nameKR;
+	}
+
+	public void setNameKR(String nameKR)
+	{
+		this.nameKR = nameKR;
+	}
+
+	public String getNameUS()
+	{
+		return nameUS;
+	}
+
+	public void setNameUS(String nameUS)
+	{
+		this.nameUS = nameUS;
 	}
 }

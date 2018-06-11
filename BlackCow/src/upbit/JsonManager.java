@@ -32,7 +32,7 @@ public class JsonManager
 
 			for (int index = 0; index < jsonArray.size(); index++)
 			{
-				objectList.addFirst(getObject(jsonArray, index));
+				objectList.addLast(getObject(jsonArray, index));
 			}
 		}
 		catch (ParseException e)
