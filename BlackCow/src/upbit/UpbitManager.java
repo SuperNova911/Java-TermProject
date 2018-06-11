@@ -2,6 +2,9 @@ package upbit;
 
 import java.util.ArrayList;
 
+import upbit.CoinList.CoinSymbol;
+import upbit.CoinList.Market;
+
 public class UpbitManager
 {
 	private Account user;

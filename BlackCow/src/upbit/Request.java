@@ -10,6 +10,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
+import upbit.CoinList.CoinSymbol;
+import upbit.CoinList.Market;
+
 public class Request
 {
 	public enum TermType

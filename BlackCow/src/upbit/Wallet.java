@@ -1,5 +1,7 @@
 package upbit;
 
+import upbit.CoinList.CoinSymbol;
+
 public class Wallet
 {
 	private CoinSymbol coinSymbol;
