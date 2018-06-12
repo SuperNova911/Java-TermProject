@@ -104,7 +104,7 @@ public class TestManager
 		
 		LinkedList<JSONObject> list = JsonManager.parse(Request.request(Request.Upbit.createUrl(Market.KRW, CoinSymbol.XRP, TermType.minutes, 1, 10)));
 		
-		CryptoCurrency coin1 = new CryptoCurrency(list, Market.KRW, CoinSymbol.XRP, TermType.minutes);
+		CryptoCurrency coin1 = new CryptoCurrency(list, Market.KRW, CoinSymbol.XRP, TermType.minutes, 1);
 		
 		for (JSONObject jsonObject : coin1.getObjectList())
 		{
@@ -165,9 +165,10 @@ public class TestManager
 		GUI gui = new GUI();
 		
 		upbit.setGui(gui);
-		gui.setVisible(true);
-		
 		gui.setUpbit(upbit);
+		gui.setVisible(true);
+	
+		upbit.getAccount().addBalance(CoinSymbol.BTC, 15.123123, 1000000);
 	}
 	
 	public static void kappa()
