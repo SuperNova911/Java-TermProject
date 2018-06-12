@@ -3,6 +3,8 @@ package upbit;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import upbit.CoinList.CoinNameKR;
+
 public class CoinList
 {
 	public enum Market
@@ -49,6 +51,22 @@ public class CoinList
 		listBTC = new ArrayList<CoinSymbol>();
 		listETH = new ArrayList<CoinSymbol>();
 
+	}
+	
+	public static CoinNameKR getCoinNameKR(CoinSymbol coinSymbol)
+	{
+		int index = 0;
+		int target = coinSymbol.ordinal();
+		
+		for (CoinNameKR coinNameKR : CoinNameKR.values())
+		{
+			if (index == target)
+				return coinNameKR;
+			
+			index++;
+		}
+		
+		return null;
 	}
 
 	
