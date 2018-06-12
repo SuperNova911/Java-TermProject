@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
+import javax.swing.JFormattedTextField;
 
 public class GUI extends JFrame
 {
@@ -103,7 +104,6 @@ public class GUI extends JFrame
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 
-		DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer();
 		coinTableElements = new ArrayList<CoinTableElement>();
 		
 		JPanel panel_Right = new JPanel();
@@ -180,6 +180,8 @@ public class GUI extends JFrame
 		panel_Buy.add(button_Buy100);
 		
 		textField_BuyTotal = new JTextField();
+		textField_BuyTotal.setFont(new Font("±¼¸²", Font.BOLD, 12));
+		textField_BuyTotal.setForeground(Color.RED);
 		textField_BuyTotal.addActionListener(new ActionListener() 
 		{
 			public void actionPerformed(ActionEvent arg0) 
@@ -266,6 +268,8 @@ public class GUI extends JFrame
 		panel_Sell.add(button_Sell100);
 		
 		textField_SellTotal = new JTextField();
+		textField_SellTotal.setForeground(Color.BLUE);
+		textField_SellTotal.setFont(new Font("±¼¸²", Font.BOLD, 12));
 		textField_SellTotal.setHorizontalAlignment(SwingConstants.RIGHT);
 		textField_SellTotal.setEditable(false);
 		textField_SellTotal.setColumns(10);
@@ -386,11 +390,12 @@ public class GUI extends JFrame
 		panel_KRW.add(button_SearchKRW);
 		
 		JScrollPane scrollPane_KRW = new JScrollPane();
-		scrollPane_KRW.setBounds(0, 27, 291, 630);
+		scrollPane_KRW.setBounds(0, 27, 291, 609);
 		scrollPane_KRW.getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
 		panel_KRW.add(scrollPane_KRW);
 		
 		table_KRW = new JTable();
+		table_KRW.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
 		table_KRW.addMouseListener(new table_Select(table_KRW));
 		table_KRW.setShowVerticalLines(false);
 		table_KRW.setModel(new DefaultTableModel(
@@ -409,19 +414,22 @@ public class GUI extends JFrame
 				return false;
 			}
 		});
-		cellRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
 		table_KRW.getColumnModel().getColumn(0).setResizable(false);
 		table_KRW.getColumnModel().getColumn(0).setPreferredWidth(100);
 		table_KRW.getColumnModel().getColumn(1).setResizable(false);
-		table_KRW.getColumnModel().getColumn(1).setCellRenderer(cellRenderer);
 		table_KRW.getColumnModel().getColumn(2).setResizable(false);
 		table_KRW.getColumnModel().getColumn(2).setPreferredWidth(70);
-		table_KRW.getColumnModel().getColumn(2).setCellRenderer(cellRenderer);
 		table_KRW.getColumnModel().getColumn(3).setResizable(false);
 		table_KRW.getColumnModel().getColumn(3).setPreferredWidth(80);
-		table_KRW.getColumnModel().getColumn(3).setCellRenderer(cellRenderer);
+		
+		table_KRW.getColumnModel().getColumn(0).setCellRenderer(new CustomCellRenderer());
+		table_KRW.getColumnModel().getColumn(1).setCellRenderer(new CustomCellRenderer());
+		table_KRW.getColumnModel().getColumn(2).setCellRenderer(new CustomCellRenderer());
+		table_KRW.getColumnModel().getColumn(3).setCellRenderer(new CustomCellRenderer());
 		table_KRW.setRowHeight(40);
 		table_KRW.getTableHeader().setReorderingAllowed(false);
+
+		
 		scrollPane_KRW.setViewportView(table_KRW);
 		
 		JPanel panel_BTC = new JPanel();
@@ -445,11 +453,12 @@ public class GUI extends JFrame
 		panel_MyCoin.add(button_searchMyCoin);
 		
 		JScrollPane scrollPane_MyCoin = new JScrollPane();
-		scrollPane_MyCoin.setBounds(0, 27, 291, 630);
+		scrollPane_MyCoin.setBounds(0, 27, 291, 609);
 		scrollPane_MyCoin.getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
 		panel_MyCoin.add(scrollPane_MyCoin);
 		
 		table_MyCoin = new JTable();
+		table_MyCoin.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
 		table_MyCoin.setShowVerticalLines(false);
 		table_MyCoin.setModel(new DefaultTableModel(
 				new Object[][] {}, new String[] { "ÀÌ¸§", "º¸À¯(Æò°¡±Ý)", "¸Å¼öÆò±Õ°¡", "¼öÀÍ·ü" }) 
@@ -470,12 +479,9 @@ public class GUI extends JFrame
 		table_MyCoin.getColumnModel().getColumn(0).setResizable(false);
 		table_MyCoin.getColumnModel().getColumn(1).setResizable(false);
 		table_MyCoin.getColumnModel().getColumn(1).setPreferredWidth(100);
-		table_MyCoin.getColumnModel().getColumn(1).setCellRenderer(cellRenderer);
 		table_MyCoin.getColumnModel().getColumn(2).setResizable(false);
 		table_MyCoin.getColumnModel().getColumn(2).setPreferredWidth(100);
-		table_MyCoin.getColumnModel().getColumn(2).setCellRenderer(cellRenderer);
 		table_MyCoin.getColumnModel().getColumn(3).setResizable(false);
-		table_MyCoin.getColumnModel().getColumn(3).setCellRenderer(cellRenderer);
 		table_MyCoin.setRowHeight(40);
 		table_KRW.getTableHeader().setReorderingAllowed(false);
 		scrollPane_MyCoin.setViewportView(table_MyCoin);
@@ -764,9 +770,6 @@ public class GUI extends JFrame
 	{
 		this.buySellRatio = ratio;
 	}
-
-
-
 
 
 	class button_BuySellRatio implements ActionListener
