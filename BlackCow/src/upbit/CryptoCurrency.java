@@ -23,15 +23,17 @@ public class CryptoCurrency implements Serializable
 	private Market market;
 	private CoinSymbol coinSymbol;
 	private TermType termType;
+	private int term;
 	
-	public CryptoCurrency(LinkedList<JSONObject> list, Market market, CoinSymbol coinSymbol, TermType termType)
+	public CryptoCurrency(LinkedList<JSONObject> list, Market market, CoinSymbol coinSymbol, TermType termType, int term)
 	{
 		this.setObjecList(list);
 		this.setMarket(market);
 		this.setCoinSymbol(coinSymbol);
 		this.setTermType(termType);
+		this.setTerm(term);
 		
-		this.name = market + "-" + coinSymbol + "-" + termType;
+		this.name = market + "-" + coinSymbol + "-" + termType + "-" + term;
 		this.setLocalName();
 	}
 
@@ -97,21 +99,27 @@ public class CryptoCurrency implements Serializable
 		}
 	}
 	
+	public void addData(CryptoCurrency cryptoCurrency)
+	{
+		addData(cryptoCurrency.getObjectList());
+	}
+	
 	public void setLocalName()
 	{
-		int index = 0;
-		int target = this.coinSymbol.ordinal();
-		
-		for (CoinNameKR coinNameKR : CoinNameKR.values())
-		{
-			if (index == target)
-			{
-				setNameKR(coinNameKR.toString());
-				break;
-			}
-			
-			index++;
-		}
+		setNameKR(CoinList.getCoinNameKR(coinSymbol).toString());
+//		int index = 0;
+//		int target = this.coinSymbol.ordinal();
+//		
+//		for (CoinNameKR coinNameKR : CoinNameKR.values())
+//		{
+//			if (index == target)
+//			{
+//				setNameKR(coinNameKR.toString());
+//				break;
+//			}
+//			
+//			index++;
+//		}
 	}
 	
 	
@@ -195,6 +203,16 @@ public class CryptoCurrency implements Serializable
 			byMinute = false;
 	}
 
+	public int getTerm()
+	{
+		return term;
+	}
+
+	public void setTerm(int term)
+	{
+		this.term = term;
+	}
+	
 	public String getNameKR()
 	{
 		return nameKR;
