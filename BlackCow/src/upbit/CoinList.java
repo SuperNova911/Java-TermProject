@@ -30,6 +30,11 @@ public class CoinList
 		대시, 코모도, 버트코인, 메탈, 어거, 아크, 지캐시
 	}
 	
+	public enum CoinNameUS
+	{
+		
+	}
+	
 	private ArrayList<CoinSymbol> listKRW;
 	private ArrayList<CoinSymbol> listBTC;
 	private ArrayList<CoinSymbol> listETH;
@@ -48,8 +53,13 @@ public class CoinList
 				)));
 		
 		
-		listBTC = new ArrayList<CoinSymbol>();
-		listETH = new ArrayList<CoinSymbol>();
+		setListBTC(new ArrayList<CoinSymbol>(Arrays.asList(
+				
+				)));
+		
+		setListETH(new ArrayList<CoinSymbol>(Arrays.asList(
+				
+				)));
 
 	}
 	
@@ -79,5 +89,25 @@ public class CoinList
 	public void setListKRW(ArrayList<CoinSymbol> listKRW)
 	{
 		this.listKRW = listKRW;
+	}
+
+	public ArrayList<CoinSymbol> getListBTC()
+	{
+		return listBTC;
+	}
+
+	public void setListBTC(ArrayList<CoinSymbol> listBTC)
+	{
+		this.listBTC = listBTC;
+	}
+
+	public ArrayList<CoinSymbol> getListETH()
+	{
+		return listETH;
+	}
+
+	public void setListETH(ArrayList<CoinSymbol> listETH)
+	{
+		this.listETH = listETH;
 	}
 }
