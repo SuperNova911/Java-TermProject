@@ -87,9 +87,8 @@ public class JsonManager
 		catch (NullPointerException e)
 		{
 			System.out.println("Failed to getData, jsonKey: " + jsonKey);
-			e.printStackTrace();
 			
-			return "";
+			return "0";
 		}
 	}
 	
