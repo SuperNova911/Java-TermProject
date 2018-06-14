@@ -2,7 +2,12 @@ package upbit;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.LinkedList;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -12,6 +17,7 @@ import org.json.simple.JSONObject;
 import com.google.gson.JsonObject;
 
 import gui.GUI;
+import gui.OrderTableElement;
 import javafx.scene.shape.Cylinder;
 import upbit.CoinList.CoinSymbol;
 import upbit.CoinList.Market;
@@ -21,10 +27,15 @@ import upbit.Request.TermType;
 public class Upbit
 {
 	private ArrayList<CryptoCurrency> cryptoList;
+	private ArrayList<OrderBook> orderList;
+	
+	private DynamicCrawler crawler;
 	private Account account;
-	private CoinList coinList;
 	private GUI gui;
-	private ScheduledThreadPoolExecutor executor;
+	
+	private ScheduledThreadPoolExecutor scheduledExecutor;
+	private ExecutorService executorService; 
+	
 
 	
 	private int refreshTime;
@@ -34,171 +45,109 @@ public class Upbit
 		setAccount(account);
 		
 		cryptoList = new ArrayList<CryptoCurrency>();
-		setCoinList(new CoinList());
-		executor = new ScheduledThreadPoolExecutor(4);
+		orderList = new ArrayList<OrderBook>();
 
 		loadCryptoCurrency();
-		//updateData(Market.KRW)
-		testThread(5);
 	}
 	
-	public boolean loadCryptoCurrency()
+	public void initiate()
 	{
-		CryptoCurrency cryptoCurrency, requestData;
-		
-		for (CoinSymbol coinSymbol : getCoinList().getListKRW())
-		{
-			requestData = requestData(Market.KRW, coinSymbol, TermType.minutes, 60, 24);
-			try
-			{
-				cryptoCurrency = getCryptoCurrency(createName(Market.KRW, coinSymbol, TermType.minutes, 60));
-				cryptoCurrency.addData(requestData);
-			}
-			catch (Exception e)
-			{
-				addCryptoCurrency(requestData);
-			}
-		}
-		
-		return false;
+		autoUpdate();
 	}
 	
-	public void updateData(Market market)
+	public void autoUpdate()
 	{
-		int updateFrequency = 5;
+		ScheduledThreadPoolExecutor executor = getScheduledExecutor();
+		Market market = Market.KRW;
 		
-		executor.scheduleAtFixedRate(
-				new Runnable()
-				{
-					@Override
-					public void run()
-					{
-						String url;
-						LinkedList<JSONObject> list;
-						CryptoCurrency cryptoCurrency;
-						
-						switch (market)
-						{
-						case KRW:
-							for (CoinSymbol coinSymbol : getCoinList().getListKRW())
-							{
-								System.out.println(coinSymbol.toString());
-								url = Request.Upbit.createUrlByMin(market, coinSymbol, 1, 2);
-								list = JsonManager.parse(Request.request(url));
-								
-								try
-								{
-									cryptoCurrency = getCryptoCurrency(createName(market, coinSymbol, TermType.minutes, 1));
-									cryptoCurrency.addData(list);
-								}
-								catch (Exception e)
-								{
-									System.out.println("Failed to getCryptoCurrency, create new CryptoCurrency");
-									addCryptoCurrency(new CryptoCurrency(list, market, coinSymbol, TermType.minutes, 1));
-								}
-							}
-						
-							try
-							{
-								gui.updateCoinTable(market);
-							}
-							catch (Exception e)
-							{
-								// TODO 자동 생성된 catch 블록
-								e.printStackTrace();
-							}
-							
-							System.out.println("Update");
-							
-							break;
-							
-						case BTC:
-							break;
-							
-						case ETH:
-							break;
-						}
-					}
-				}, 1, updateFrequency, TimeUnit.SECONDS);
+		int updateDelay = 5;
+		int startDelay = 60 - Calendar.getInstance().get(Calendar.SECOND) + 1;
+		
+		executor.scheduleAtFixedRate(()->updateData(market, TermType.minutes, 1, 2), 0, updateDelay, TimeUnit.SECONDS);
+		executor.scheduleAtFixedRate(()->updateData(market, TermType.days, 1, 1), 1, updateDelay, TimeUnit.SECONDS);	
+		executor.scheduleAtFixedRate(()->updateData(market, TermType.minutes, 60, 2), startDelay, 3600, TimeUnit.SECONDS);
+
+		executor.scheduleAtFixedRate(()->getGui().updateCoinTable(market), 3, updateDelay, TimeUnit.SECONDS);
 	}
 	
-	public void testThread(int updateFrequency)
+	public void loadCryptoCurrency()
 	{
-		updateFrequency = 5;
-		
-		executor.scheduleAtFixedRate(
-				new Runnable()
-				{
-					@Override
-					public void run()
-					{
-						updateDataTest(Market.KRW, TermType.minutes, 60, 1);
-						updateDataTest(Market.KRW, TermType.days, 1, 1);
-						
-						try
-						{
-							gui.kappa(Market.KRW);
-						}
-						catch (Exception e)
-						{
-							// TODO 자동 생성된 catch 블록
-							e.printStackTrace();
-						}
-					}
-				}, 1, updateFrequency, TimeUnit.SECONDS);
+		updateData(Market.KRW, TermType.minutes, 60, 24);
 	}
 	
-	public void updateDataTest(Market market, TermType termType, int term, int dataAmount)
+	public void updateData(Market market, TermType termType, int term, int dataAmount)
 	{
 		String url;
 		LinkedList<JSONObject> list;
+		ArrayList<CoinSymbol> listCoinSymbol = new ArrayList<>();
 		CryptoCurrency cryptoCurrency;
 		
 		switch (market)
 		{
 		case KRW:
-			for (CoinSymbol coinSymbol : getCoinList().getListKRW())
-			{
-				url = Request.Upbit.createUrl(market, coinSymbol, termType, term, dataAmount);
-				list = JsonManager.parse(Request.request(url));
-				
-				try
-				{
-					cryptoCurrency = getCryptoCurrency(createName(market, coinSymbol, termType, term));
-					cryptoCurrency.addData(list);
-				}
-				catch (Exception e)
-				{
-					System.out.println("Failed to getCryptoCurrency, create new CryptoCurrency");
-					addCryptoCurrency(new CryptoCurrency(list, market, coinSymbol, termType, term));
-				}
-			}
-									
-			System.out.println("Update");
-			
+			listCoinSymbol = CoinList.listKRW;
 			break;
 			
 		case BTC:
+			listCoinSymbol = CoinList.listBTC;
 			break;
 			
 		case ETH:
+			listCoinSymbol = CoinList.listETH;
 			break;
+		}
+		
+		for (CoinSymbol coinSymbol : listCoinSymbol)
+		{
+			try
+			{
+				cryptoCurrency = requestData(market, coinSymbol, termType, term, dataAmount);
+			}
+			catch (Exception e1)
+			{
+				continue;
+			}
+			
+			try
+			{
+				getCryptoCurrency(createName(market, coinSymbol, termType, term)).addData(cryptoCurrency);
+			}
+			catch (Exception e)
+			{
+				addCryptoCurrency(cryptoCurrency);
+			}
 		}
 	}
 	
-	public CryptoCurrency requestData(Market market, CoinSymbol coinSymbol, TermType termType, int term, int dataAmount)
+	public void updateOrderBook(Market market, CoinSymbol coinSymbol)
 	{
-		String url = Request.Upbit.createUrl(market, coinSymbol, termType, term, dataAmount);
-		LinkedList<JSONObject> list = JsonManager.parse(Request.request(url));
-		CryptoCurrency cryptoCurrency = new CryptoCurrency(list, market, coinSymbol, termType, term);
+		OrderBook orderBook;
 		
-		return cryptoCurrency;
+		orderBook = crawler.getOrderBook(market, coinSymbol);
+		addOrderBook(orderBook);
+		gui.updateOrderTable(market, coinSymbol);
 	}
 	
-	
-	public boolean buy(Market market, CoinSymbol coinSymbol, double quantity)
+	public CryptoCurrency requestData(Market market, CoinSymbol coinSymbol, TermType termType, int term, int dataAmount) throws Exception
 	{
-		double price = getTradePrice(market, coinSymbol);
+		String url = Request.Upbit.createUrl(market, coinSymbol, termType, term, dataAmount);
+		LinkedList<JSONObject> list;
+		CryptoCurrency cryptoCurrency;
+		
+		try
+		{
+			list = JsonManager.parse(Request.request(url));
+			cryptoCurrency = new CryptoCurrency(list, market, coinSymbol, termType, term);
+			return cryptoCurrency;
+		}
+		catch (Exception e)
+		{
+			throw new Exception();
+		}
+	}
+	
+	public boolean buy(Market market, CoinSymbol coinSymbol, double price, double quantity)
+	{
 		double totalPrice = price * quantity;
 		double balance = 0;
 		
@@ -233,9 +182,8 @@ public class Upbit
 		return false;
 	}
 	
-	public boolean sell(Market market, CoinSymbol coinSymbol, double quantity)
+	public boolean sell(Market market, CoinSymbol coinSymbol, double price, double quantity)
 	{
-		double price = getTradePrice(market, coinSymbol);
 		double totalPrice = price * quantity;
 		double balance = account.getBalance(coinSymbol);
 		
@@ -307,9 +255,64 @@ public class Upbit
 		cryptoList.add(cryptoCurrency);
 	}
 	
+	public OrderBook getOrderBook(Market market, CoinSymbol coinSymbol) throws Exception
+	{
+		for (OrderBook orderBook : orderList)
+		{
+			if (orderBook.getMarket() == market && orderBook.getCoinSymbol() == coinSymbol)
+				return orderBook;
+		}
+
+		throw new Exception();
+	}
+	
+	public void addOrderBook(OrderBook orderBook)
+	{
+		for (OrderBook book : orderList)
+		{
+			if (orderBook.getMarket() == book.getMarket() && orderBook.getCoinSymbol() == book.getCoinSymbol())
+			{
+				book = orderBook;
+				return;
+			}
+		}
+		
+		orderList.add(orderBook);
+	}
+	
 	public String createName(Market market, CoinSymbol coinSymbol, TermType termType, int term)
 	{
 		return market + "-" + coinSymbol + "-" + termType + "-" + term;
+	}
+	
+	public double getVolume(Market market, CoinSymbol coinSymbol, int hours)
+	{
+		CryptoCurrency cryptoCurrency;
+		double volume = 0;
+		
+		try
+		{
+			cryptoCurrency = getCryptoCurrency(createName(market, coinSymbol, TermType.minutes, 60));
+		}
+		catch (Exception e)
+		{
+			try
+			{
+				cryptoCurrency = requestData(market, coinSymbol, TermType.minutes, 60, hours);
+				addCryptoCurrency(cryptoCurrency);
+			}
+			catch (Exception e1)
+			{
+				return 0;
+			}
+		}
+		
+		for (int index = 0; index < hours; index++)
+		{
+			volume += Double.parseDouble(cryptoCurrency.getData(JsonKey.candleAccTradePrice, index));
+		}
+
+		return volume;
 	}
 	
 	
@@ -348,94 +351,44 @@ public class Upbit
 	{
 		this.gui = gui;
 	}
-	
-	public CoinList getCoinList()
+
+	public ScheduledThreadPoolExecutor getScheduledExecutor()
 	{
-		return coinList;
+		return scheduledExecutor;
 	}
 
-	public void setCoinList(CoinList coinList)
+	public void setScheduledExecutor(ScheduledThreadPoolExecutor scheduledExecutor)
 	{
-		this.coinList = coinList;
+		this.scheduledExecutor = scheduledExecutor;
 	}
 
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	public void updateData(TermType termType)
+	public DynamicCrawler getCrawler()
 	{
-		if (termType == TermType.days)
-		{
-			for (CoinSymbol coinSymbol : CoinSymbol.values())
-			{
-				String url = Request.Upbit.createUrl(Market.KRW, coinSymbol, termType, 1, 1);
-				String data = Request.request(url);
-				
-				if (data != "RQ_FAIL")
-				{
-					addJsonArray(JsonManager.parse(data));
-					System.out.println("Add " + coinSymbol);
-				}
-			}
-		}
-		
-	}
-	
-	public void addJsonArray(JSONArray jsonArray)
-	{
-		jsonArrayList.add(jsonArray);
-	}
-	
-	public void requestData(TermType termType, int dataAmount)
-	{
-		requestData(termType, 1, dataAmount);
-	}
-	
-	public void requestData(TermType termType, int term, int dataAmount)
-	{
-		String url, data;
-		
-		for (Market market : Market.values())
-		{
-			if (market != market.KRW)
-				continue;
-			
-			for (CoinSymbol coinSymbol : CoinSymbol.values())
-			{
-				if (termType == TermType.minutes)
-					url = Request.Upbit.createUrlByMin(market, coinSymbol, term, dataAmount);
-				else
-					url = Request.Upbit.createUrl(market, coinSymbol, termType, term, dataAmount);
-				
-				data = Request.request(url);
-				
-				if (data != "RQ_FAIL")
-					JsonManager.save(JsonManager.parse(data), market + "-" + coinSymbol + "-" + termType);
-				
-				
-			}
-		}
-	}
-	
-	// 다듬기
-	public boolean createJsonDirectory()
-	{
-		File file = new File("json");
-		file.mkdirs();
-		return true;
+		return crawler;
 	}
 
-	
-	
-	
-	
-	
+	public void setCrawler(DynamicCrawler crawler)
+	{
+		this.crawler = crawler;
+	}
+
+	public ArrayList<OrderBook> getOrderList()
+	{
+		return orderList;
+	}
+
+	public void setOrderList(ArrayList<OrderBook> orderList)
+	{
+		this.orderList = orderList;
+	}
+
+	public ExecutorService getExecutorService()
+	{
+		return executorService;
+	}
+
+	public void setExecutorService(ExecutorService executorService)
+	{
+		this.executorService = executorService;
+	}
 }

@@ -1,6 +1,7 @@
 package upbit;
 
 import java.io.File;
+import java.util.concurrent.ExecutorService;
 
 import org.jsoup.Connection.Base;
 import org.openqa.selenium.By;
@@ -23,16 +24,20 @@ import upbit.OrderBook.OrderData;
 
 public class DynamicCrawler 
 {
+	private ExecutorService executorService;
+	
 	private WebDriver driver;
 	private Actions actions;
 	
 	private boolean headless = false;
 	private String baseXPath = "//*[@id=\"root\"]/div/div/div[3]/div/section[1]/div/div[1]/article/span[2]/div/div/div[1]/table/tbody";
+	private String upbitAddress = "https://upbit.com/home";
 	
 	
 	public DynamicCrawler()
 	{
 		launchBrowser();
+		moveTo(upbitAddress);
 	}
 
 	public boolean launchBrowser()
@@ -112,6 +117,9 @@ public class DynamicCrawler
 	
 	public boolean moveTo(String url)
 	{
+		if (driver.getCurrentUrl().equals(url))
+			return true;
+		
 		try
 		{
 			driver.get(url);
@@ -158,7 +166,7 @@ public class DynamicCrawler
 	
 	public OrderBook getOrderBook(Market market, CoinSymbol coinSymbol)
 	{
-		OrderBook orderBook = new OrderBook();
+		OrderBook orderBook = new OrderBook(market, coinSymbol);
 		String url = createURL(market, coinSymbol);
 		String xpath = createXpath(20, OrderData.price, false);
 		
@@ -233,19 +241,14 @@ public class DynamicCrawler
 	{
 		return baseXPath;
 	}
-	
-	
-	public void test()
-	{
-		String xpath = "//*[@id=\"PM_ID_ct\"]/div[1]/div[1]/div/div[2]/a[1]";
-		moveTo("https://www.naver.com/");
-		new WebDriverWait(driver, 15).until(ExpectedConditions.visibilityOfElementLocated(By.xpath(xpath)));
-		
-		WebElement kappa;
-		
-		kappa = findElementByXPath(xpath);
 
-		System.out.println(kappa.getAttribute("id"));
-		System.out.println(kappa.getText());
+	public ExecutorService getExecutorService()
+	{
+		return executorService;
+	}
+
+	public void setExecutorService(ExecutorService executorService)
+	{
+		this.executorService = executorService;
 	}
 }
