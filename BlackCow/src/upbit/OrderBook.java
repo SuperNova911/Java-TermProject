@@ -2,19 +2,26 @@ package upbit;
 
 import java.util.ArrayList;
 
-import upbit.OrderBook.OrderData;
+import upbit.CoinList.CoinSymbol;
+import upbit.CoinList.Market;
 
 public class OrderBook
 {
 	private ArrayList<Order> orderList;
+	
+	private Market market;
+	private CoinSymbol coinSymbol;
 	
 	public enum OrderData
 	{
 		price, quantity, percentage
 	}
 	
-	public OrderBook()
+	public OrderBook(Market market, CoinSymbol coinSymbol)
 	{
+		setMarket(market);
+		setCoinSymbol(coinSymbol);
+		
 		orderList = new ArrayList<Order>();
 	}
 	
@@ -41,105 +48,24 @@ public class OrderBook
 	{
 		return orderList;
 	}
-}
 
-class Order
-{
-	private double price;
-	private double quantity;
-	private double percentage;
-	
-	public Order(String price, String quantity, String percentage)
+	public Market getMarket()
 	{
-		this.setPrice(toDouble(price));
-		this.setQuantity(toDouble(quantity));
-		this.setPercentage(toDouble(percentage));
-	}
-	
-	public double toDouble(String string)
-	{
-		double result = 0;
-
-		string = string.replaceAll(",", "");
-		string = string.replaceAll("%", "");
-		
-		try
-		{
-			result = Double.parseDouble(string);
-		}
-		catch (NumberFormatException e)
-		{
-			e.printStackTrace();
-			System.out.println("Failed to toDouble: " + string);
-		}
-		
-		return result;
-		
-//		switch (orderData)
-//		{
-//		case price:
-//		case quantity:
-//			try
-//			{
-//				result = Double.parseDouble(string);
-//			}
-//			catch (NumberFormatException e1)
-//			{
-//				System.out.println("Failed to toDouble, parseDouble: " + string);
-//			}
-//			break;
-//			
-//		case percentage:
-//			try
-//			{
-//				int endIndex = string.indexOf('%');
-//				string = string.substring(0, endIndex);
-//			}
-//			catch (Exception e)
-//			{
-//				System.out.println("Failed to toDouble, trying alternative method");
-//				string = string.substring(0, string.length() - 1);
-//			}
-//
-//			try
-//			{
-//				result = Double.parseDouble(string);
-//			}
-//			catch (NumberFormatException e)
-//			{
-//				System.out.println("Failed to toDouble, parseDouble: " + string);
-//			}
-//			break;
-//		}
+		return market;
 	}
 
-	public double getPrice()
+	public void setMarket(Market market)
 	{
-		return price;
+		this.market = market;
 	}
 
-	public void setPrice(double price)
+	public CoinSymbol getCoinSymbol()
 	{
-		this.price = price;
+		return coinSymbol;
 	}
 
-	public double getQuantity()
+	public void setCoinSymbol(CoinSymbol coinSymbol)
 	{
-		return quantity;
-	}
-
-	public void setQuantity(double quantity)
-	{
-		this.quantity = quantity;
-	}
-
-	public double getPercentage()
-	{
-		return percentage;
-	}
-
-	public void setPercentage(double percentage)
-	{
-		this.percentage = percentage;
+		this.coinSymbol = coinSymbol;
 	}
 }
