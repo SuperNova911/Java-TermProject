@@ -10,13 +10,12 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 @SuppressWarnings("serial")
-public class CustomCellRenderer extends DefaultTableCellRenderer
+public class CustomCellRenderer_CoinTable extends DefaultTableCellRenderer
 {
 	@Override
 	public Component getTableCellRendererComponent(JTable table, Object value,
 			boolean isSelected, boolean hasFocus, int row, int column)
 	{
-		
 		Component c = super.getTableCellRendererComponent(table, value, isSelected,
                 hasFocus, row, column);
 		
@@ -53,32 +52,6 @@ public class CustomCellRenderer extends DefaultTableCellRenderer
 		}
 		
 		return c;
-		
-
-//
-//		switch (column)
-//		{
-//		case 0:
-//			break;
-//			
-//		case 1:
-//			setHorizontalAlignment(SwingConstants.RIGHT);
-//			break;
-//			
-//		case 2:
-//			str = table.getValueAt(row, column).toString().replaceAll("%", "");
-//			num = Double.parseDouble(str);
-//			
-//			c.setForeground(getColor(num));
-//			setHorizontalAlignment(SwingConstants.RIGHT);
-//			break;
-//			
-//		case 3:
-//			setHorizontalAlignment(SwingConstants.RIGHT);
-//			break;
-//		}
-//		
-//		return c;
 	}
 	
 	public Color getColor(double num)
