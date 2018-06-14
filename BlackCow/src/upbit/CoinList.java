@@ -52,44 +52,36 @@ public class CoinList
 		
 	}
 	
-	private ArrayList<CoinSymbol> listKRW;
-	private ArrayList<CoinSymbol> listBTC;
-	private ArrayList<CoinSymbol> listETH;
+	public static ArrayList<CoinSymbol> listKRW = new ArrayList<CoinSymbol>(Arrays.asList(
+			CoinSymbol.ADA, CoinSymbol.ARDR, CoinSymbol.ARK, CoinSymbol.BCC, CoinSymbol.BTC, CoinSymbol.BTG,
+			CoinSymbol.DASH, CoinSymbol.EMC2, CoinSymbol.EOS, CoinSymbol.ETC, CoinSymbol.ETH, CoinSymbol.GNT, 
+			CoinSymbol.GRS, CoinSymbol.GTO, CoinSymbol.ICX, CoinSymbol.IGNIS, CoinSymbol.KMD, CoinSymbol.LSK, 
+			CoinSymbol.LTC, CoinSymbol.MCO, CoinSymbol.MER, CoinSymbol.MTL, CoinSymbol.NEO, CoinSymbol.OMG, 
+			CoinSymbol.PIVX, CoinSymbol.POWR, CoinSymbol.QTUM, CoinSymbol.REP, CoinSymbol.SBD,CoinSymbol.SC,
+			CoinSymbol.SNT, CoinSymbol.STEEM, CoinSymbol.STORJ, CoinSymbol.STORM,CoinSymbol.STRAT, CoinSymbol.TIX,
+			CoinSymbol.TRX, CoinSymbol.VTC, CoinSymbol.WAVES, CoinSymbol.XEM,CoinSymbol.XLM, CoinSymbol.XMR, 
+			CoinSymbol.XRP, CoinSymbol.ZEC
+			));
 	
-	public CoinList()
-	{
-		setListKRW(new ArrayList<CoinSymbol>(Arrays.asList(
-				CoinSymbol.ADA, CoinSymbol.ARDR, CoinSymbol.ARK, CoinSymbol.BCC, CoinSymbol.BTC, CoinSymbol.BTG,
-				CoinSymbol.DASH, CoinSymbol.EMC2, CoinSymbol.EOS, CoinSymbol.ETC, CoinSymbol.ETH, CoinSymbol.GNT, 
-				CoinSymbol.GRS, CoinSymbol.GTO, CoinSymbol.ICX, CoinSymbol.IGNIS, CoinSymbol.KMD, CoinSymbol.LSK, 
-				CoinSymbol.LTC, CoinSymbol.MCO, CoinSymbol.MER, CoinSymbol.MTL, CoinSymbol.NEO, CoinSymbol.OMG, 
-				CoinSymbol.PIVX, CoinSymbol.POWR, CoinSymbol.QTUM, CoinSymbol.REP, CoinSymbol.SBD,CoinSymbol.SC,
-				CoinSymbol.SNT, CoinSymbol.STEEM, CoinSymbol.STORJ, CoinSymbol.STORM,CoinSymbol.STRAT, CoinSymbol.TIX,
-				CoinSymbol.TRX, CoinSymbol.VTC, CoinSymbol.WAVES, CoinSymbol.XEM,CoinSymbol.XLM, CoinSymbol.XMR, 
-				CoinSymbol.XRP, CoinSymbol.ZEC
-				)));
+	public static ArrayList<CoinSymbol> listBTC = new ArrayList<CoinSymbol>(Arrays.asList(
+			CoinSymbol.DGB, CoinSymbol.POLY, CoinSymbol.NXT, CoinSymbol.RDD, CoinSymbol.DCR,CoinSymbol.TUSD, 
+            CoinSymbol.ZRX, CoinSymbol.ZEN, CoinSymbol.DOGE, CoinSymbol.OCN, CoinSymbol.PAY,
+            CoinSymbol.GAME, CoinSymbol.NXS, CoinSymbol.WAX, CoinSymbol.EDG, CoinSymbol.VEE, CoinSymbol.XZC,
+            CoinSymbol.RLC, CoinSymbol.TUBE, CoinSymbol.SYS, CoinSymbol.BAT, CoinSymbol.BLOCK, CoinSymbol.FCT,
+            CoinSymbol.MONA, CoinSymbol.VIB, CoinSymbol.SALT, CoinSymbol.ADX, CoinSymbol.MANA, CoinSymbol.DCT,
+            CoinSymbol.GUP, CoinSymbol.BURST, CoinSymbol.RVR, CoinSymbol.LBC, CoinSymbol.GBYTE, CoinSymbol.CLOAK,
+            CoinSymbol.MUE, CoinSymbol.CVC, CoinSymbol.VIA, CoinSymbol.ANT, CoinSymbol.ENG, CoinSymbol.SLS, CoinSymbol.DMT,
+            CoinSymbol.LRC, CoinSymbol.DNT, CoinSymbol.UKG, CoinSymbol.ADT, CoinSymbol.IOP, CoinSymbol.BAY, CoinSymbol.LUN,
+            CoinSymbol.XEL, CoinSymbol.UBQ, CoinSymbol.HMQ, CoinSymbol.XDN, CoinSymbol.SHIFT, CoinSymbol.NGC, CoinSymbol.OK,
+            CoinSymbol.BITB, CoinSymbol.UP, CoinSymbol.NAV, CoinSymbol.GNO, CoinSymbol.CFI, CoinSymbol.RCN,CoinSymbol.FTC, 
+            CoinSymbol.BLK, CoinSymbol.BCPT, CoinSymbol.DYN, CoinSymbol.ION, CoinSymbol.RADS, CoinSymbol.VRC, CoinSymbol.PTOY,
+            CoinSymbol.AMP, CoinSymbol.NMR, CoinSymbol.WINGS, CoinSymbol.BNT, CoinSymbol.NBT, CoinSymbol.SYNX, CoinSymbol.EXP,
+            CoinSymbol.KORE, CoinSymbol.AID, CoinSymbol.BSD, CoinSymbol.BLT, CoinSymbol.EXCL, CoinSymbol.SWT, CoinSymbol.TX,
+            CoinSymbol.PRO, CoinSymbol.SIB, CoinSymbol.QRL, CoinSymbol.SPHR, CoinSymbol.UNB, CoinSymbol.MEME
+			));
 	
-		setListBTC(new ArrayList<CoinSymbol>(Arrays.asList(
-				CoinSymbol.DGB, CoinSymbol.POLY, CoinSymbol.NXT, CoinSymbol.RDD, CoinSymbol.DCR,CoinSymbol.TUSD, 
-	            CoinSymbol.ZRX, CoinSymbol.ZEN, CoinSymbol.DOGE, CoinSymbol.OCN, CoinSymbol.PAY,
-	            CoinSymbol.GAME, CoinSymbol.NXS, CoinSymbol.WAX, CoinSymbol.EDG, CoinSymbol.VEE, CoinSymbol.XZC,
-	            CoinSymbol.RLC, CoinSymbol.TUBE, CoinSymbol.SYS, CoinSymbol.BAT, CoinSymbol.BLOCK, CoinSymbol.FCT,
-	            CoinSymbol.MONA, CoinSymbol.VIB, CoinSymbol.SALT, CoinSymbol.ADX, CoinSymbol.MANA, CoinSymbol.DCT,
-	            CoinSymbol.GUP, CoinSymbol.BURST, CoinSymbol.RVR, CoinSymbol.LBC, CoinSymbol.GBYTE, CoinSymbol.CLOAK,
-	            CoinSymbol.MUE, CoinSymbol.CVC, CoinSymbol.VIA, CoinSymbol.ANT, CoinSymbol.ENG, CoinSymbol.SLS, CoinSymbol.DMT,
-	            CoinSymbol.LRC, CoinSymbol.DNT, CoinSymbol.UKG, CoinSymbol.ADT, CoinSymbol.IOP, CoinSymbol.BAY, CoinSymbol.LUN,
-	            CoinSymbol.XEL, CoinSymbol.UBQ, CoinSymbol.HMQ, CoinSymbol.XDN, CoinSymbol.SHIFT, CoinSymbol.NGC, CoinSymbol.OK,
-	            CoinSymbol.BITB, CoinSymbol.UP, CoinSymbol.NAV, CoinSymbol.GNO, CoinSymbol.CFI, CoinSymbol.RCN,CoinSymbol.FTC, 
-	            CoinSymbol.BLK, CoinSymbol.BCPT, CoinSymbol.DYN, CoinSymbol.ION, CoinSymbol.RADS, CoinSymbol.VRC, CoinSymbol.PTOY,
-	            CoinSymbol.AMP, CoinSymbol.NMR, CoinSymbol.WINGS, CoinSymbol.BNT, CoinSymbol.NBT, CoinSymbol.SYNX, CoinSymbol.EXP,
-	            CoinSymbol.KORE, CoinSymbol.AID, CoinSymbol.BSD, CoinSymbol.BLT, CoinSymbol.EXCL, CoinSymbol.SWT, CoinSymbol.TX,
-	            CoinSymbol.PRO, CoinSymbol.SIB, CoinSymbol.QRL, CoinSymbol.SPHR, CoinSymbol.UNB, CoinSymbol.MEME
-				)));
-		
-		setListETH(new ArrayList<CoinSymbol>(Arrays.asList(	
-				)));
+	public static ArrayList<CoinSymbol> listETH = new ArrayList<CoinSymbol>(Arrays.asList());
 
-	}
 	
 	public static CoinNameKR getCoinNameKR(CoinSymbol coinSymbol)
 	{
@@ -105,37 +97,5 @@ public class CoinList
 		}
 		
 		return null;
-	}
-
-	
-	//Getter, Setter
-	public ArrayList<CoinSymbol> getListKRW()
-	{
-		return listKRW;
-	}
-
-	public void setListKRW(ArrayList<CoinSymbol> listKRW)
-	{
-		this.listKRW = listKRW;
-	}
-
-	public ArrayList<CoinSymbol> getListBTC()
-	{
-		return listBTC;
-	}
-
-	public void setListBTC(ArrayList<CoinSymbol> listBTC)
-	{
-		this.listBTC = listBTC;
-	}
-
-	public ArrayList<CoinSymbol> getListETH()
-	{
-		return listETH;
-	}
-
-	public void setListETH(ArrayList<CoinSymbol> listETH)
-	{
-		this.listETH = listETH;
 	}
 }
