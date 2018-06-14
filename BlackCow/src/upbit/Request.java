@@ -20,13 +20,14 @@ public class Request
 		minutes, days, weeks, months
 	}
 	
-	public static String request(String urlAddress)
+	public static String request(String urlAddress) throws Exception
 	{
 		URL url;
+
+		url = new URL(urlAddress);
 		
 		try
 		{
-			url = new URL(urlAddress);
 			URLConnection urlConn = url.openConnection();
 			BufferedReader br = new BufferedReader(new InputStreamReader(urlConn.getInputStream()));
 
@@ -34,11 +35,11 @@ public class Request
 		} 
 		catch (IOException e)
 		{
-			System.out.println("Failed to request, try again: " + urlAddress);
+//			System.out.println("Failed to request, try again: " + urlAddress);
 			
 			try
 			{
-				url = new URL(urlAddress);
+				Thread.sleep(100);
 				URLConnection urlConn = url.openConnection();
 				BufferedReader br = new BufferedReader(new InputStreamReader(urlConn.getInputStream()));
 
@@ -46,12 +47,11 @@ public class Request
 			}
 			catch (IOException e1)
 			{
-				System.out.println("Failed to request:" + urlAddress);
-				e1.printStackTrace();
+				System.out.println("Failed to request: " + urlAddress);
 			}
-			
-			return "RQ_FAIL";
 		}
+		
+		throw new Exception();
 	}
 	
 	
