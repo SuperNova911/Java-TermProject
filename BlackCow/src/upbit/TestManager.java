@@ -102,70 +102,71 @@ public class TestManager
 //		System.out.println(JsonManager.parse(Request.request(Request.Upbit.createUrl(Market.KRW, CoinSymbol.XRP, TermType.months, 1, 1))));
 		
 		
-		LinkedList<JSONObject> list = JsonManager.parse(Request.request(Request.Upbit.createUrl(Market.KRW, CoinSymbol.XRP, TermType.minutes, 1, 10)));
-		
-		CryptoCurrency coin1 = new CryptoCurrency(list, Market.KRW, CoinSymbol.XRP, TermType.minutes, 1);
-		
-		for (JSONObject jsonObject : coin1.getObjectList())
-		{
-			//System.out.println(jsonObject.toString());
-			System.out.println(JsonManager.getData(jsonObject, JsonKey.timestamp));
-		}
-		System.out.println("--------새로운 리스트------------------------------");
-		
-		
-		coin1.getObjectList().clear();
-		
-		System.out.println("-------리스트 초기화-------------------------------");
-
-		list = JsonManager.parse(Request.request(Request.Upbit.createUrl(Market.KRW, CoinSymbol.XRP, TermType.minutes, 1, 10)));
-		list.remove(9);
-		list.remove(8);
-		list.remove(7);
-		
-		coin1.addData(list);
-		
-		
-		
-		for (JSONObject jsonObject : coin1.getObjectList())
-		{
-			System.out.println(JsonManager.getData(jsonObject, JsonKey.timestamp));
-		}
-
-		System.out.println("-------뒤에 3개 삭제한거 추가-------------------------------");
-
-		list = JsonManager.parse(Request.request(Request.Upbit.createUrl(Market.KRW, CoinSymbol.XRP, TermType.minutes, 1, 10)));
-		coin1.addData(list);
-
-		System.out.println("----------같은거 10개추가-------------------------");
-		
-		for (JSONObject jsonObject : coin1.getObjectList())
-		{
-			System.out.println(JsonManager.getData(jsonObject, JsonKey.timestamp));
-		}
-
-		System.out.println("----------출력-------------------------");
-		
-		ObjectIO.createDirectory("crypto");
-		ObjectIO.Coin.save(coin1, "./crypto/" + coin1.getName());
-		
-		CryptoCurrency coin2 = ObjectIO.Coin.load(coin1.getName());
-		
-		System.out.println("----------------세이브 로드----------------------");
-		
-		for (JSONObject jsonObject : coin2.getObjectList())
-		{
-			System.out.println(jsonObject.toString());
-		}
-
-		System.out.println("---------------------출력-----------------");
+//		LinkedList<JSONObject> list = JsonManager.parse(Request.request(Request.Upbit.createUrl(Market.KRW, CoinSymbol.XRP, TermType.minutes, 1, 10)));
+//		
+//		CryptoCurrency coin1 = new CryptoCurrency(list, Market.KRW, CoinSymbol.XRP, TermType.minutes, 1);
+//		
+//		for (JSONObject jsonObject : coin1.getObjectList())
+//		{
+//			//System.out.println(jsonObject.toString());
+//			System.out.println(JsonManager.getData(jsonObject, JsonKey.timestamp));
+//		}
+//		System.out.println("--------새로운 리스트------------------------------");
+//		
+//		
+//		coin1.getObjectList().clear();
+//		
+//		System.out.println("-------리스트 초기화-------------------------------");
+//
+//		list = JsonManager.parse(Request.request(Request.Upbit.createUrl(Market.KRW, CoinSymbol.XRP, TermType.minutes, 1, 10)));
+//		list.remove(9);
+//		list.remove(8);
+//		list.remove(7);
+//		
+//		coin1.addData(list);
+//		
+//		
+//		
+//		for (JSONObject jsonObject : coin1.getObjectList())
+//		{
+//			System.out.println(JsonManager.getData(jsonObject, JsonKey.timestamp));
+//		}
+//
+//		System.out.println("-------뒤에 3개 삭제한거 추가-------------------------------");
+//
+//		list = JsonManager.parse(Request.request(Request.Upbit.createUrl(Market.KRW, CoinSymbol.XRP, TermType.minutes, 1, 10)));
+//		coin1.addData(list);
+//
+//		System.out.println("----------같은거 10개추가-------------------------");
+//		
+//		for (JSONObject jsonObject : coin1.getObjectList())
+//		{
+//			System.out.println(JsonManager.getData(jsonObject, JsonKey.timestamp));
+//		}
+//
+//		System.out.println("----------출력-------------------------");
+//		
+//		ObjectIO.createDirectory("crypto");
+//		ObjectIO.Coin.save(coin1, "./crypto/" + coin1.getName());
+//		
+//		CryptoCurrency coin2 = ObjectIO.Coin.load(coin1.getName());
+//		
+//		System.out.println("----------------세이브 로드----------------------");
+//		
+//		for (JSONObject jsonObject : coin2.getObjectList())
+//		{
+//			System.out.println(jsonObject.toString());
+//		}
+//
+//		System.out.println("---------------------출력-----------------");
+//		
 		
 		Account account = new Account("suwhan", "kappa", 5000000);
 		Upbit upbit = new Upbit(account);
-		GUI gui = new GUI();
+		GUI gui = new GUI(upbit);
+		DynamicCrawler crawler = new DynamicCrawler();
 		
 		upbit.setGui(gui);
-		gui.setUpbit(upbit);
 		gui.setVisible(true);
 	
 		upbit.getAccount().addBalance(CoinSymbol.BTC, 15.123123, 1000000);
