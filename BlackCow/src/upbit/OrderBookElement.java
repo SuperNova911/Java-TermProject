@@ -1,12 +1,12 @@
 package upbit;
 
-public class Order
+public class OrderBookElement
 {
 	private double price;
 	private double quantity;
 	private double percentage;
 	
-	public Order(String price, String quantity, String percentage)
+	public OrderBookElement(String price, String quantity, String percentage)
 	{
 		this.setPrice(toDouble(price));
 		this.setQuantity(toDouble(quantity));
