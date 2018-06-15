@@ -32,10 +32,10 @@ public class CoinTableElement
 		
 		data[0] = name;
 		
-		decimalFormat = new DecimalFormat("#,###.########");
+		decimalFormat = new DecimalFormat("#,##0.########");
 		data[1] = decimalFormat.format(tradePrice);
 		
-		decimalFormat = new DecimalFormat("#,###.00");
+		decimalFormat = new DecimalFormat("#,##0.00");
 		data[2] = (changeRate > 0 ? "+" : "") + decimalFormat.format(changeRate * 100) + "%";
 		
 		decimalFormat = new DecimalFormat("#,###");
