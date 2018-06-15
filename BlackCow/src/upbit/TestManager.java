@@ -1,8 +1,18 @@
 package upbit;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.json.simple.JSONObject;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.support.ui.Sleeper;
 
 import com.google.common.util.concurrent.CycleDetectingLockFactory;
 
@@ -160,16 +170,61 @@ public class TestManager
 //
 //		System.out.println("---------------------출력-----------------");
 //		
-		
-		Account account = new Account("suwhan", "kappa", 5000000);
-		Upbit upbit = new Upbit(account);
-		GUI gui = new GUI(upbit);
+//		
+//		Account account = new Account("suwhan", "kappa", 5000000);
+//		Upbit upbit = new Upbit(account);
+//		GUI gui = new GUI(upbit);
+//		DynamicCrawler crawler = new DynamicCrawler();
+//		
+//		upbit.setGui(gui);
+//		gui.setVisible(true);
+//	
+//		upbit.getAccount().addBalance(CoinSymbol.BTC, 15.123123, 1000000);
+
+
 		DynamicCrawler crawler = new DynamicCrawler();
+		crawler.getOrderBook(Market.KRW, CoinSymbol.BTC);
+//		crawler.moveTo("https://www.playxp.com/sc2/");
+//		try
+//		{
+////			Thread.sleep(2000);
+//		}
+//		catch (InterruptedException e)
+//		{
+//			// TODO 자동 생성된 catch 블록
+//			e.printStackTrace();
+//		}
 		
-		upbit.setGui(gui);
-		gui.setVisible(true);
-	
-		upbit.getAccount().addBalance(CoinSymbol.BTC, 15.123123, 1000000);
+		String pa = "#root > div > div > div:nth-child(4) > div > section.ty01 > div > div.leftB > article > span.askpriceB > div > div > div:nth-child(1) > table > tbody";
+		String pa2 = "#root > div > div > div:nth-child(4) > div > section.ty01 > div > div.leftB > article > span.askpriceB > div > div > div:nth-child(1) > table > tbody > tr:nth-child(4)";
+		String s = 	crawler.getDriver().findElement(By.cssSelector(pa)).getText();
+
+		System.out.println(s);
+
+		System.out.println("-----------------");
+		
+		s = s.replaceAll("-\n",  "").replaceAll(",", "").replaceAll("%", "");
+		String[] ary = s.split("\n");
+		
+		for (String str : ary)
+		{
+//			System.out.println("--");
+			System.out.println(str);
+		}
+
+		System.out.println("-----------------");
+		ArrayList<String> orderList = new ArrayList<>();
+		
+		for (int index = 0; index < ary.length; index++)
+		{
+			if ((index >= 3 && index <= 21) || (index >= 49 && index <= 70))
+				continue;
+			
+			orderList.add(ary[index]);
+		}
+		
+		for (String str : orderList)
+			System.out.println(str);
 	}
 	
 	public static void kappa()

@@ -65,6 +65,7 @@ public class Manager
 
 		gui.initiate();
 		upbit.initiate();
+		crawler.initiate();
 		
 		// GUI 보여주기
 		gui.setVisible(true);
