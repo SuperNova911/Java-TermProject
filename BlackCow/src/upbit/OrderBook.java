@@ -7,7 +7,7 @@ import upbit.CoinList.Market;
 
 public class OrderBook
 {
-	private ArrayList<Order> orderList;
+	private ArrayList<OrderBookElement> orderBookElementList;
 	
 	private Market market;
 	private CoinSymbol coinSymbol;
@@ -22,31 +22,31 @@ public class OrderBook
 		setMarket(market);
 		setCoinSymbol(coinSymbol);
 		
-		orderList = new ArrayList<Order>();
+		orderBookElementList = new ArrayList<OrderBookElement>();
 	}
 	
-	public void addOrder(String price, String quantity, String percentage)
+	public void addOrderBookElement(String price, String quantity, String percentage, boolean buy)
 	{
-		orderList.add(new Order(price, quantity, percentage));
-		System.out.println("Add order: " + orderList.size() + ". " + price + "\t" + quantity + "\t" + percentage);
+		orderBookElementList.add(new OrderBookElement(price, quantity, percentage, buy));
+//		System.out.println("Add order: " + orderList.size() + ". " + price + "\t" + quantity + "\t" + percentage);
 	}
 	
-	public Order getOrder(int index)
+	public OrderBookElement getOrder(int index)
 	{
 		try
 		{
-			return orderList.get(index);
+			return orderBookElementList.get(index);
 		}
 		catch (Exception e)
 		{
 			System.out.println("Failed to getOrder: " + index);
-			return new Order("0", "0", "0");
+			return new OrderBookElement("0", "0", "0", true);
 		}
 	}
 	
-	public ArrayList<Order> getOrderList()
+	public ArrayList<OrderBookElement> getOrderBookElementList()
 	{
-		return orderList;
+		return orderBookElementList;
 	}
 
 	public Market getMarket()
