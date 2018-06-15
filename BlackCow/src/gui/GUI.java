@@ -1044,21 +1044,49 @@ public class GUI extends JFrame
 		// 2이면 getChangeRate()
 		// 3이면 getVolume()
 
+		int i =0; int j = 0;
 		
 		switch (column)
 		{
 		case 1:
-			
+			for(i = 0; i!=coinTableElements.size(); ++i) {
+				j = i - 1;
+				double std = coinTableElements.get(i).getTradePrice();
+				double b = coinTableElements.get(j).getTradePrice();
+				while( j >= 0 && std > b){
+					b = coinTableElements.get(j).getTradePrice();
+					j -= 1;
+			    }
+			}
 			break;
-			
 		case 2:
-			
+			for(i = 0; i!=coinTableElements.size(); ++i) {
+				j = i - 1;
+				double std = coinTableElements.get(i).getChangeRate();
+				double b = coinTableElements.get(j).getChangeRate();
+				while( j >= 0 && std > b){
+					b = coinTableElements.get(j).getChangeRate();
+					j -= 1;
+			    }
+			}
 			break;
 			
 		case 3:
-			
+			for(i = 0; i!=coinTableElements.size(); ++i) {
+				j = i - 1;
+				double std = coinTableElements.get(i).getVolume();
+				double b = coinTableElements.get(j).getVolume();
+				while( j >= 0 && std > b){
+					b = coinTableElements.get(j).getVolume();
+					j -= 1;
+			    }
+			}
 			break;
 		}
+		//swap
+		CoinTableElement temp = coinTableElements.get(i);
+		coinTableElements.set(i, coinTableElements.get(j+1));
+		coinTableElements.set(j+1, temp);
 	}
 	
 

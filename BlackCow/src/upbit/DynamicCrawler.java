@@ -29,7 +29,7 @@ public class DynamicCrawler
 	private WebDriver driver;
 	private Actions actions;
 	
-	private boolean headless = false;
+	private boolean headless = true;
 	private String baseXPath = "//*[@id=\"root\"]/div/div/div[3]/div/section[1]/div/div[1]/article/span[2]/div/div/div[1]/table/tbody";
 	private String upbitAddress = "https://upbit.com/home";
 	
