@@ -5,12 +5,14 @@ public class OrderBookElement
 	private double price;
 	private double quantity;
 	private double percentage;
+	private boolean buy;
 	
-	public OrderBookElement(String price, String quantity, String percentage)
+	public OrderBookElement(String price, String quantity, String percentage, boolean buy)
 	{
 		this.setPrice(toDouble(price));
 		this.setQuantity(toDouble(quantity));
 		this.setPercentage(toDouble(percentage));
+		this.setBuy(buy);
 	}
 	
 	private double toDouble(String string)
@@ -61,5 +63,15 @@ public class OrderBookElement
 	public void setPercentage(double percentage)
 	{
 		this.percentage = percentage;
+	}
+
+	public boolean isBuy()
+	{
+		return buy;
+	}
+
+	public void setBuy(boolean buy)
+	{
+		this.buy = buy;
 	}
 }
