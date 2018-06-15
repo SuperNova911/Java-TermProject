@@ -32,10 +32,10 @@ public class OrderTableElement
 		Object[] data = new Object[4];
 		DecimalFormat decimalFormat;
 
-		decimalFormat = new DecimalFormat("#,###.########");
+		decimalFormat = new DecimalFormat("#,##0.########");
 		data[0] = decimalFormat.format(price) + " ";
 
-		decimalFormat = new DecimalFormat("#,###.00");
+		decimalFormat = new DecimalFormat("#,##0.00");
 		data[1] = (changeRate > 0 ? "+" : "") + decimalFormat.format(changeRate) + "% ";
 		
 		decimalFormat = new DecimalFormat("0.000");
