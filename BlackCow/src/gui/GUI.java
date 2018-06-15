@@ -1036,7 +1036,30 @@ public class GUI extends JFrame
 		}
 	}
 	
-	
+	public void sort(int column)
+	{
+		// 리스트 이름 : coinTableElements
+		
+		// 1이면 getTradePrice()
+		// 2이면 getChangeRate()
+		// 3이면 getVolume()
+
+		
+		switch (column)
+		{
+		case 1:
+			
+			break;
+			
+		case 2:
+			
+			break;
+			
+		case 3:
+			
+			break;
+		}
+	}
 	
 
 
@@ -1262,30 +1285,7 @@ public class GUI extends JFrame
 		}
 	}
 	
-	public void sort(int column)
-	{
-		// 리스트 이름 : coinTableElements
-		
-		// 1이면 getTradePrice()
-		// 2이면 getChangeRate()
-		// 3이면 getVolume()
-
-		
-		switch (column)
-		{
-		case 1:
-			
-			break;
-			
-		case 2:
-			
-			break;
-			
-		case 3:
-			
-			break;
-		}
-	}
+	
 	
 
 	// Getter, Setter
