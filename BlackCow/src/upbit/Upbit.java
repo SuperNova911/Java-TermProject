@@ -1,6 +1,7 @@
 package upbit;
 
 import java.io.File;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.LinkedList;
@@ -27,7 +28,8 @@ import upbit.Request.TermType;
 public class Upbit
 {
 	private ArrayList<CryptoCurrency> cryptoList;
-	private ArrayList<OrderBook> orderList;
+	private ArrayList<OrderBook> orderBookList;
+	private ArrayList<Order> orderList;
 	
 	private DynamicCrawler crawler;
 	private Account account;
@@ -45,7 +47,8 @@ public class Upbit
 		setAccount(account);
 		
 		cryptoList = new ArrayList<CryptoCurrency>();
-		orderList = new ArrayList<OrderBook>();
+		orderBookList = new ArrayList<OrderBook>();
+		orderList = new ArrayList<Order>();
 
 		loadCryptoCurrency();
 	}
@@ -63,11 +66,20 @@ public class Upbit
 		int updateDelay = 5;
 		int startDelay = 60 - Calendar.getInstance().get(Calendar.SECOND) + 1;
 		
-		executor.scheduleAtFixedRate(()->updateData(market, TermType.minutes, 1, 2), 0, updateDelay, TimeUnit.SECONDS);
-		executor.scheduleAtFixedRate(()->updateData(market, TermType.days, 1, 1), 1, updateDelay, TimeUnit.SECONDS);	
-		executor.scheduleAtFixedRate(()->updateData(market, TermType.minutes, 60, 2), startDelay, 3600, TimeUnit.SECONDS);
+		executor.scheduleAtFixedRate(()->updateData(gui.getCurrentMarket(), TermType.minutes, 1, 2), 0, updateDelay, TimeUnit.SECONDS);
+		executor.scheduleAtFixedRate(()->updateData(gui.getCurrentMarket(), TermType.days, 1, 1), 1, updateDelay, TimeUnit.SECONDS);	
+		executor.scheduleAtFixedRate(()->updateData(gui.getCurrentMarket(), TermType.minutes, 60, 2), startDelay, 3600, TimeUnit.SECONDS);
 
-		executor.scheduleAtFixedRate(()->getGui().updateCoinTable(market), 3, updateDelay, TimeUnit.SECONDS);
+		executor.scheduleAtFixedRate(()->
+		{
+			getGui().updateCoinTable(gui.getCurrentMarket());
+		}, 3, updateDelay, TimeUnit.SECONDS);
+
+		executor.scheduleAtFixedRate(()->
+		{
+			if (crawler.isReady())
+				updateOrderBook(gui.getCurrentMarket(), gui.getCurrentCoinSymbol());
+		}, 0, updateDelay, TimeUnit.SECONDS);
 	}
 	
 	public void loadCryptoCurrency()
@@ -121,9 +133,11 @@ public class Upbit
 	
 	public void updateOrderBook(Market market, CoinSymbol coinSymbol)
 	{
+		gui.updateOrderTable(market, coinSymbol);
+		
 		OrderBook orderBook;
 		
-		orderBook = crawler.getOrderBook(market, coinSymbol);
+		orderBook = crawler.getOrderBook_Fast(market, coinSymbol);
 		addOrderBook(orderBook);
 		gui.updateOrderTable(market, coinSymbol);
 	}
@@ -144,6 +158,34 @@ public class Upbit
 		{
 			throw new Exception();
 		}
+	}
+	
+	public void createOrder(Market market, CoinSymbol coinSymbol, double tradePrice, double quantity, boolean buy)
+	{
+		Order order;
+		
+		DecimalFormat decimalFormat;
+		decimalFormat = new DecimalFormat("00");
+
+		int id = 0;	// юс╫ц
+		Calendar calendar = Calendar.getInstance();
+		double date = Double.parseDouble((
+				Integer.toString(calendar.get(Calendar.YEAR)) +
+				decimalFormat.format(calendar.get(Calendar.MONTH) + 1) +
+				decimalFormat.format(calendar.get(Calendar.DAY_OF_MONTH)) +
+				decimalFormat.format(calendar.get(Calendar.HOUR_OF_DAY)) +
+				decimalFormat.format(calendar.get(Calendar.MINUTE))));
+
+		order = new Order(market, coinSymbol, id, date, tradePrice, quantity, buy);
+		
+		System.out.println(order.toString());
+		
+		orderList.add(order);
+	}
+	
+	public void kappa()
+	{
+		
 	}
 	
 	public boolean buy(Market market, CoinSymbol coinSymbol, double price, double quantity)
@@ -257,7 +299,7 @@ public class Upbit
 	
 	public OrderBook getOrderBook(Market market, CoinSymbol coinSymbol) throws Exception
 	{
-		for (OrderBook orderBook : orderList)
+		for (OrderBook orderBook : orderBookList)
 		{
 			if (orderBook.getMarket() == market && orderBook.getCoinSymbol() == coinSymbol)
 				return orderBook;
@@ -268,16 +310,17 @@ public class Upbit
 	
 	public void addOrderBook(OrderBook orderBook)
 	{
-		for (OrderBook book : orderList)
+		for (OrderBook book : orderBookList)
 		{
 			if (orderBook.getMarket() == book.getMarket() && orderBook.getCoinSymbol() == book.getCoinSymbol())
 			{
-				book = orderBook;
+				orderBookList.remove(book);
+				orderBookList.add(orderBook);
+				
 				return;
 			}
 		}
-		
-		orderList.add(orderBook);
+		orderBookList.add(orderBook);
 	}
 	
 	public String createName(Market market, CoinSymbol coinSymbol, TermType termType, int term)
@@ -372,14 +415,14 @@ public class Upbit
 		this.crawler = crawler;
 	}
 
-	public ArrayList<OrderBook> getOrderList()
+	public ArrayList<OrderBook> getOrderBookList()
 	{
-		return orderList;
+		return orderBookList;
 	}
 
-	public void setOrderList(ArrayList<OrderBook> orderList)
+	public void setOrderBookList(ArrayList<OrderBook> orderBookList)
 	{
-		this.orderList = orderList;
+		this.orderBookList = orderBookList;
 	}
 
 	public ExecutorService getExecutorService()
