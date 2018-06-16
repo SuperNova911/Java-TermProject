@@ -1,8 +1,10 @@
 package upbit;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.LinkedList;
 
+import org.jfree.date.DateUtilities;
 import org.json.simple.JSONObject;
 
 import upbit.CoinList.CoinNameKR;
@@ -11,6 +13,10 @@ import upbit.CoinList.Market;
 import upbit.JsonManager.JsonKey;
 import upbit.Request.TermType;
 
+/**
+ * @author suwha
+ *
+ */
 public class CryptoCurrency implements Serializable
 {	
 	private LinkedList<JSONObject> objectList;
@@ -120,6 +126,54 @@ public class CryptoCurrency implements Serializable
 //			
 //			index++;
 //		}
+	}
+	
+	public Date getDate(int index)
+	{
+		String timeKst = getData(JsonKey.candleDateTimeKst, index);
+		timeKst = timeKst.replaceAll("-", "").replaceAll("T", "").replaceAll(":", "");
+		
+		int year = Integer.parseInt(timeKst.substring(0, 4));
+		int month = Integer.parseInt(timeKst.substring(4, 6));
+		int day = Integer.parseInt(timeKst.substring(6, 8));
+		int hour = Integer.parseInt(timeKst.substring(8, 10));
+		int min = Integer.parseInt(timeKst.substring(10, 12));
+		
+		return DateUtilities.createDate(year, month, day, hour, min);
+	}
+	
+	
+	/**
+	 * @param startIndex
+	 * @param endIndex
+	 * @return [0] = 최소, [1] = 최대
+	 */
+	public double[] getMinMaxPrice(int startIndex, int endIndex)
+	{
+		double min, max;
+		double highPrice, lowPrice;
+
+		min = Double.parseDouble(getData(JsonKey.lowPrice, startIndex));
+		max = Double.parseDouble(getData(JsonKey.highPrice, startIndex));
+		
+		for (; startIndex <= endIndex; startIndex++)
+		{
+			lowPrice = Double.parseDouble(getData(JsonKey.lowPrice, startIndex));
+			highPrice = Double.parseDouble(getData(JsonKey.highPrice, startIndex));
+			
+			if (min > lowPrice)
+				min = lowPrice;
+			
+			if (max < highPrice)
+				max = highPrice;
+		}
+		double kappa = ((max - min) * 1.25) / 10;
+		double[] result = new double[2];
+		
+		result[0] = min - kappa;
+		result[1] = max + kappa;
+		
+		return result;
 	}
 	
 	
