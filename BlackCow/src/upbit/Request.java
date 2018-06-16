@@ -97,46 +97,5 @@ public class Request
 			
 			return url;
 		}
-
-//		public static String createUpbitURL(
-//				Market market, CoinSymbol coinSymbol, TermType termType, int dataAmount)
-//		{
-//			return createUpbitURL(market, coinSymbol, termType, 1, dataAmount, "now");
-//		}
-//
-//		public static String createUpbitURL(
-//				Market market, CoinSymbol coinSymbol, TermType termType, int dataAmount, String timeStamp)
-//		{
-//			return createUpbitURL(market, coinSymbol, termType, 1, dataAmount, timeStamp);
-//		}
-//		
-//		public static String createUpbitURL(
-//				Market market, CoinSymbol coinSymbol, TermType termType, int term, int dataAmount)
-//		{
-//			return createUpbitURL(market, coinSymbol, termType, term, dataAmount, "now");
-//		}
-//		
-//		public static String createUpbitURL(
-//				Market market, CoinSymbol coinSymbol, TermType termType, int term, int dataAmount, String timeStamp)
-//		{
-//			String url = "https://crix-api-endpoint.upbit.com/v1/crix/candles/";
-//			
-//			url += termType;
-//			
-//			if (termType == TermType.minutes)
-//				url += "/" + Integer.toString(term);		
-//			
-//			url += "?code=CRIX.UPBIT."
-//					+ market + "-"
-//					+ coinSymbol;
-//			
-//			if (dataAmount >= 1)
-//				url += "&count=" + dataAmount;
-//			
-//			if (!timeStamp.equals("now"))
-//				url += "&to=" + timeStamp;
-//			
-//			return url;
-//		}
 	}
 }
