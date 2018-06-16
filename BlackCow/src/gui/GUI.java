@@ -11,6 +11,13 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.data.xy.DefaultHighLowDataset;
+import org.jfree.date.DateUtilities;
+import org.json.simple.JSONObject;
 import org.w3c.dom.events.MouseEvent;
 
 import upbit.CoinList;
@@ -18,6 +25,7 @@ import upbit.CoinList.CoinSymbol;
 import upbit.CoinList.Market;
 import upbit.CryptoCurrency;
 import upbit.DynamicCrawler;
+import upbit.JsonManager;
 import upbit.OrderBook;
 import upbit.JsonManager.JsonKey;
 import upbit.OrderBookElement;
@@ -52,10 +60,18 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.font.NumericShaper;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.math.RoundingMode;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.security.CryptoPrimitive;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedList;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -96,6 +112,9 @@ public class GUI extends JFrame
 	DecimalFormat decimalFormat;
 
 	private JPanel contentPane;
+	private JPanel panel_Chart;
+	private ChartPanel chartPanel;
+	private JFreeChart chart;
 	
 	private JTextField textField_BuyQuantity;
 	private JTextField textField_BuyTotal;
@@ -467,110 +486,117 @@ public class GUI extends JFrame
 		table_TradeHistoryComplete.getTableHeader().setReorderingAllowed(false);
 		scrollPane_TradeComplete.setViewportView(table_TradeHistoryComplete);
 		
-		JPanel panel_Chart = new JPanel();
-		panel_Chart.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panel_Chart.setBounds(0, 0, 675, 439);
-		panel_Center.add(panel_Chart);
-		panel_Chart.setLayout(null);
+		JPanel panel_Top = new JPanel();
+		panel_Top.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		panel_Top.setBounds(0, 0, 675, 439);
+		panel_Center.add(panel_Top);
+		panel_Top.setLayout(null);
 		
-		JPanel panel_InfoLeft = new JPanel();
-		panel_InfoLeft.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panel_InfoLeft.setBounds(0, 0, 675, 55);
-		panel_Chart.add(panel_InfoLeft);
-		panel_InfoLeft.setLayout(null);
+		JPanel panel_Info = new JPanel();
+		panel_Info.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		panel_Info.setBounds(0, 0, 675, 55);
+		panel_Top.add(panel_Info);
+		panel_Info.setLayout(null);
 		
 		JLabel lblNewLabel = new JLabel("\uAC70\uB798\uB300\uAE08 (24H)");
 		lblNewLabel.setFont(new Font("∏º¿∫ ∞ÌµÒ", Font.PLAIN, 12));
 		lblNewLabel.setHorizontalAlignment(SwingConstants.LEFT);
 		lblNewLabel.setBounds(560, 10, 86, 15);
-		panel_InfoLeft.add(lblNewLabel);
+		panel_Info.add(lblNewLabel);
 		
 		label_InfoVolume = new JLabel("");
 		label_InfoVolume.setHorizontalAlignment(SwingConstants.LEFT);
 		label_InfoVolume.setFont(new Font("∏º¿∫ ∞ÌµÒ", Font.PLAIN, 10));
 		label_InfoVolume.setBounds(560, 27, 111, 15);
-		panel_InfoLeft.add(label_InfoVolume);
+		panel_Info.add(label_InfoVolume);
 		
 		JLabel lblNewLabel_2 = new JLabel("\uACE0\uAC00");
 		lblNewLabel_2.setFont(new Font("∏º¿∫ ∞ÌµÒ", Font.PLAIN, 12));
 		lblNewLabel_2.setHorizontalAlignment(SwingConstants.LEFT);
 		lblNewLabel_2.setBounds(445, 10, 57, 15);
-		panel_InfoLeft.add(lblNewLabel_2);
+		panel_Info.add(lblNewLabel_2);
 		
 		JLabel label = new JLabel("\uC800\uAC00");
 		label.setHorizontalAlignment(SwingConstants.LEFT);
 		label.setFont(new Font("∏º¿∫ ∞ÌµÒ", Font.PLAIN, 12));
 		label.setBounds(445, 26, 57, 15);
-		panel_InfoLeft.add(label);
+		panel_Info.add(label);
 		
 		label_InfoHighPrice = new JLabel("");
 		label_InfoHighPrice.setForeground(Color.RED);
 		label_InfoHighPrice.setHorizontalAlignment(SwingConstants.RIGHT);
 		label_InfoHighPrice.setFont(new Font("∏º¿∫ ∞ÌµÒ", Font.BOLD, 12));
 		label_InfoHighPrice.setBounds(455, 9, 76, 15);
-		panel_InfoLeft.add(label_InfoHighPrice);
+		panel_Info.add(label_InfoHighPrice);
 		
 		label_InfoLowPrice = new JLabel("");
 		label_InfoLowPrice.setHorizontalAlignment(SwingConstants.RIGHT);
 		label_InfoLowPrice.setForeground(Color.BLUE);
 		label_InfoLowPrice.setFont(new Font("∏º¿∫ ∞ÌµÒ", Font.BOLD, 12));
 		label_InfoLowPrice.setBounds(455, 26, 76, 15);
-		panel_InfoLeft.add(label_InfoLowPrice);
+		panel_Info.add(label_InfoLowPrice);
 		
 		JLabel label_3 = new JLabel("\uC804\uC77C\uB300\uBE44");
 		label_3.setHorizontalAlignment(SwingConstants.LEFT);
 		label_3.setFont(new Font("∏º¿∫ ∞ÌµÒ", Font.PLAIN, 12));
 		label_3.setBounds(340, 10, 57, 15);
-		panel_InfoLeft.add(label_3);
+		panel_Info.add(label_3);
 		
 		label_InfoChangeRate = new JLabel("");
 		label_InfoChangeRate.setHorizontalAlignment(SwingConstants.RIGHT);
 		label_InfoChangeRate.setForeground(Color.RED);
 		label_InfoChangeRate.setFont(new Font("∏º¿∫ ∞ÌµÒ", Font.BOLD, 12));
 		label_InfoChangeRate.setBounds(285, 26, 76, 15);
-		panel_InfoLeft.add(label_InfoChangeRate);
+		panel_Info.add(label_InfoChangeRate);
 		
 		label_InfoChangePrice = new JLabel("");
 		label_InfoChangePrice.setHorizontalAlignment(SwingConstants.RIGHT);
 		label_InfoChangePrice.setForeground(Color.RED);
 		label_InfoChangePrice.setFont(new Font("∏º¿∫ ∞ÌµÒ", Font.BOLD, 12));
 		label_InfoChangePrice.setBounds(365, 26, 57, 15);
-		panel_InfoLeft.add(label_InfoChangePrice);
+		panel_Info.add(label_InfoChangePrice);
 		
-		JPanel panel_Info = new JPanel();
-		panel_Info.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panel_Info.setBounds(0, 0, 310, 55);
-		panel_InfoLeft.add(panel_Info);
-		panel_Info.setLayout(null);
+		JPanel panel_InfoLeft = new JPanel();
+		panel_InfoLeft.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		panel_InfoLeft.setBounds(0, 0, 310, 55);
+		panel_Info.add(panel_InfoLeft);
+		panel_InfoLeft.setLayout(null);
 		
 		label_InfoName = new JLabel("");
 		label_InfoName.setBounds(15, 8, 275, 25);
-		panel_Info.add(label_InfoName);
+		panel_InfoLeft.add(label_InfoName);
 		label_InfoName.setFont(new Font("∏º¿∫ ∞ÌµÒ", Font.BOLD, 18));
 		label_InfoName.setHorizontalAlignment(SwingConstants.LEFT);
 		
 		label_InfoSymbol = new JLabel("");
 		label_InfoSymbol.setBounds(15, 30, 105, 17);
-		panel_Info.add(label_InfoSymbol);
+		panel_InfoLeft.add(label_InfoSymbol);
 		label_InfoSymbol.setHorizontalAlignment(SwingConstants.LEFT);
 		label_InfoSymbol.setFont(new Font("∏º¿∫ ∞ÌµÒ", Font.PLAIN, 12));
 		
 		label_InfoTradePrice = new JLabel("");
 		label_InfoTradePrice.setBounds(105, 9, 185, 30);
-		panel_Info.add(label_InfoTradePrice);
+		panel_InfoLeft.add(label_InfoTradePrice);
 		label_InfoTradePrice.setForeground(Color.RED);
 		label_InfoTradePrice.setHorizontalAlignment(SwingConstants.RIGHT);
 		label_InfoTradePrice.setFont(new Font("∏º¿∫ ∞ÌµÒ", Font.BOLD, 18));
 		
-		JPanel panel_1 = new JPanel();
-		panel_1.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panel_1.setBounds(0, 55, 675, 314);
-		panel_Chart.add(panel_1);
+		panel_Chart = new JPanel();
+		panel_Chart.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		panel_Chart.setBounds(0, 55, 675, 384);
+        panel_Chart.setLayout(null);
+		panel_Top.add(panel_Chart);
 		
-		JPanel panel_2 = new JPanel();
-		panel_2.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panel_2.setBounds(0, 369, 675, 70);
-		panel_Chart.add(panel_2);
+		chart = createChart(null);
+        chart.getXYPlot().setOrientation(PlotOrientation.VERTICAL);
+        chart.getXYPlot().setBackgroundPaint(Color.WHITE);
+        chart.getXYPlot().setRenderer(new CustomCandlestickRenderer());
+        chart.setAntiAlias(false);
+        chart.getTitle().setVisible(false);
+        ChartPanel chartPanel = new ChartPanel(chart);
+        chartPanel.setBounds(2, 2, 671, 380);
+        chartPanel.setPreferredSize(new java.awt.Dimension(671, 380));
+        panel_Chart.add(chartPanel);
 		
 		JTabbedPane tabbedPane_CoinList = new JTabbedPane(JTabbedPane.TOP);
 		tabbedPane_CoinList.addChangeListener(new tabListener(tabbedPane_CoinList));
@@ -915,7 +941,7 @@ public class GUI extends JFrame
 			}
 		}
 		
-		sort(1);
+		sort(3);
 	}
 	
 
@@ -1112,70 +1138,167 @@ public class GUI extends JFrame
 	
 	public void sort(int column)
 	{
-		// ∏ÆΩ∫∆Æ ¿Ã∏ß : coinTableElements
-		
-		// 1¿Ã∏È getTradePrice()
-		// 2¿Ã∏È getChangeRate()
-		// 3¿Ã∏È getVolume()
-
 		switch (column)
 		{
 		case 1:
-			for(int i=1; i<coinTableElements.size(); i++)
+			for (int i = 1; i < coinTableElements.size(); i++)
 			{
 				double kappa = coinTableElements.get(i).getTradePrice();
-			
-				int j=i;
-				while( (0<j) && (kappa<coinTableElements.get(j-1).getTradePrice()) )
-				{	
-					swap(j,j-1);
-					j--;					
+
+				int j = i;
+				while ((0 < j) && (kappa > coinTableElements.get(j - 1).getTradePrice()))
+				{
+					swap(j, j - 1);
+					j--;
 				}
 			}
-			
 
 			break;
 		case 2:
-			
-			for(int i=1; i<coinTableElements.size(); i++)
+
+			for (int i = 1; i < coinTableElements.size(); i++)
 			{
 				double kappa = coinTableElements.get(i).getChangeRate();
-			
-				int j=i;
-				while( (0<j) && (kappa<coinTableElements.get(j-1).getChangeRate()) )
-				{	
-					swap(j,j-1);
-					j--;					
+
+				int j = i;
+				while ((0 < j) && (kappa > coinTableElements.get(j - 1).getChangeRate()))
+				{
+					swap(j, j - 1);
+					j--;
 				}
 			}
-			
-			
+
 			break;
-			
+
 		case 3:
-			
-			for(int i=1; i<coinTableElements.size(); i++)
+
+			for (int i = 1; i < coinTableElements.size(); i++)
 			{
 				double kappa = coinTableElements.get(i).getVolume();
+
+				int j = i;
+				while ((0 < j) && (kappa > coinTableElements.get(j - 1).getVolume()))
+				{
+					swap(j, j - 1);
+					j--;
+				}
+			}
+
+			break;
+		}
+
+		/*
+		 * for (CoinTableElement element : coinTableElements) {
+		 * System.out.println(element.getTradePrice()); }
+		 */
+
+	}
+	
+	public DefaultHighLowDataset createCandleStickDataset(CryptoCurrency cryptoCurrency, int start, int end)
+	{
+		int startIndex, endIndex;
+		int cryptoEndIndex = cryptoCurrency.getSize() - 1;
+		int requestSize = end - start + 1;
+
+		if (cryptoCurrency.getSize() >= requestSize)
+		{
+			if (cryptoEndIndex >= end)
+			{
+				startIndex = start;
+				endIndex = end;
+			}
+			else
+			{
+				startIndex = cryptoCurrency.getSize() - requestSize;
+				endIndex = cryptoEndIndex;
+			}
+		}
+		else
+		{
+			startIndex = 0;
+			endIndex = cryptoCurrency.getSize() - 1;
 			
-				int j=i;
-				while( (0<j) && (kappa<coinTableElements.get(j-1).getVolume()) )
-				{	
-					swap(j,j-1);
-					j--;					
+			requestSize = cryptoCurrency.getSize();
+		}
+		
+		
+		Date[] date = new Date[requestSize];
+		double[] high = new double[requestSize];
+		double[] low = new double[requestSize];
+		double[] open = new double[requestSize];
+		double[] close = new double[requestSize];
+		double[] volume = new double[requestSize];
+		
+		for (int index = 0; startIndex <= endIndex; index++, startIndex++)
+		{
+			date[index] = cryptoCurrency.getDate(startIndex);
+			high[index]  = Double.parseDouble(cryptoCurrency.getData(JsonKey.highPrice, startIndex));
+	        low[index]   = Double.parseDouble(cryptoCurrency.getData(JsonKey.lowPrice, startIndex));
+	        open[index]  = Double.parseDouble(cryptoCurrency.getData(JsonKey.openingPrice, startIndex));
+	        close[index] = Double.parseDouble(cryptoCurrency.getData(JsonKey.tradePrice, startIndex));
+	        volume[index] = Double.parseDouble(cryptoCurrency.getData(JsonKey.candleAccTradeVolume, startIndex));
+		}
+		
+		return new DefaultHighLowDataset(cryptoCurrency.getNameKR(), date, high, low, open, close, volume);
+	}
+	
+	public JFreeChart createChart(DefaultHighLowDataset dataset)
+	{
+		JFreeChart chart = ChartFactory.createCandlestickChart("", "", "", dataset, false);
+		
+		return chart;
+	}
+	
+	public boolean updateChart(Market market, CoinSymbol coinSymbol, TermType termType, int term, int startIndex, int endIndex)
+	{
+		try
+		{
+			CryptoCurrency cryptoCurrency;
+			DefaultHighLowDataset dataset;
+			
+			try
+			{
+				cryptoCurrency = upbit.getCryptoCurrency(upbit.createName(market, coinSymbol, termType, term));
+			}
+			catch (Exception e)
+			{
+				try
+				{
+					cryptoCurrency = upbit.requestData(market, coinSymbol, termType, term, endIndex - startIndex + 1);
+					upbit.addCryptoCurrency(cryptoCurrency);
+				}
+				catch (Exception e1)
+				{
+					return false;
 				}
 			}
 			
-			break;
+			dataset = createCandleStickDataset(cryptoCurrency, startIndex, endIndex);
+			chart.getXYPlot().setDataset(dataset); 
+			
+			double[] range = cryptoCurrency.getMinMaxPrice(startIndex, endIndex);
+			chart.getXYPlot().getRangeAxis().setRange(range[0], range[1]);
+			
+			return true;
 		}
-		
-	/*	for (CoinTableElement element : coinTableElements)
-	      {
-	         System.out.println(element.getTradePrice());
-	      }
-	*/
-		
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			return false;
+		}
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 
 
@@ -1543,5 +1666,15 @@ public class GUI extends JFrame
 	public void setCurrentMarket(Market currentMarket)
 	{
 		this.currentMarket = currentMarket;
+	}
+
+	public JPanel getPanel_Chart()
+	{
+		return panel_Chart;
+	}
+
+	public void setPanel_Chart(JPanel panel_Chart)
+	{
+		this.panel_Chart = panel_Chart;
 	}
 }

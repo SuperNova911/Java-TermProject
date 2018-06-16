@@ -62,28 +62,36 @@ public class Upbit
 	{
 		ScheduledThreadPoolExecutor executor = getScheduledExecutor();
 		Market market = Market.KRW;
-		
+
 		int updateDelay = 5;
 		int startDelay = 60 - Calendar.getInstance().get(Calendar.SECOND) + 1;
-		
-		executor.scheduleAtFixedRate(()->updateData(gui.getCurrentMarket(), TermType.minutes, 1, 2), 0, updateDelay, TimeUnit.SECONDS);
-		executor.scheduleAtFixedRate(()->updateData(gui.getCurrentMarket(), TermType.days, 1, 1), 1, updateDelay, TimeUnit.SECONDS);	
-		executor.scheduleAtFixedRate(()->updateData(gui.getCurrentMarket(), TermType.minutes, 60, 2), startDelay, 3600, TimeUnit.SECONDS);
 
-		executor.scheduleAtFixedRate(()->
+		executor.scheduleAtFixedRate(() -> updateData(gui.getCurrentMarket(), TermType.minutes, 1, 2), 0, updateDelay,
+				TimeUnit.SECONDS);
+		executor.scheduleAtFixedRate(() -> updateData(gui.getCurrentMarket(), TermType.days, 1, 1), 1, updateDelay,
+				TimeUnit.SECONDS);
+		executor.scheduleAtFixedRate(() -> updateData(gui.getCurrentMarket(), TermType.minutes, 60, 2), startDelay,
+				3600, TimeUnit.SECONDS);
+
+		executor.scheduleAtFixedRate(() ->
 		{
 			getGui().updateCoinTable(gui.getCurrentMarket());
 		}, 3, updateDelay, TimeUnit.SECONDS);
 
-		executor.scheduleAtFixedRate(()->
+		executor.scheduleAtFixedRate(() ->
 		{
 			if (crawler.isReady())
 				updateOrderBook(gui.getCurrentMarket(), gui.getCurrentCoinSymbol());
 		}, 0, updateDelay, TimeUnit.SECONDS);
+
+		executor.scheduleAtFixedRate(
+				() -> gui.updateChart(gui.getCurrentMarket(), gui.getCurrentCoinSymbol(), TermType.minutes, 1, 0, 99),
+				3, updateDelay, TimeUnit.SECONDS);
 	}
 	
 	public void loadCryptoCurrency()
 	{
+		updateData(Market.KRW, TermType.minutes, 1, 100);
 		updateData(Market.KRW, TermType.minutes, 60, 24);
 	}
 	
