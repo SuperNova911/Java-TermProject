@@ -179,47 +179,6 @@ public class DynamicCrawler
 		}
 	}
 	
-	public OrderBook getOrderBook(Market market, CoinSymbol coinSymbol)
-	{
-		OrderBook orderBook = new OrderBook(market, coinSymbol);
-		String url = createURL(market, coinSymbol);
-		String xpath = createXpath(20, OrderData.price, false);
-		
-		moveTo(url);
-		waitUntilLoad(30, By.xpath(xpath));
-		scrollToElement(findElementByXPath(xpath));
-
-		String price;
-		String quantity;
-		String percentage;
-		boolean buy;
-		
-		for (int i = 1; i <= 20; i++)
-		{
-			if (i <= 10)
-				buy = false;
-			else
-				buy = true;
-			
-			try
-			{
-				price = findElementByXPath(createXpath(i, OrderData.price, false)).getText();
-				quantity = findElementByXPath(createXpath(i, OrderData.quantity, false)).getText();
-				percentage = findElementByXPath(createXpath(i, OrderData.percentage, false)).getText();
-			}
-			catch (Exception e)
-			{
-				price = findElementByXPath(createXpath(i, OrderData.price, true)).getText();
-				quantity = findElementByXPath(createXpath(i, OrderData.quantity, true)).getText();
-				percentage = findElementByXPath(createXpath(i, OrderData.percentage, true)).getText();
-			}
-			
-			orderBook.addOrderBookElement(price, quantity, percentage, buy);
-		}
-		
-		return orderBook;
-	}
-
 	public OrderBook getOrderBook_Fast(Market market, CoinSymbol coinSymbol)
 	{
 		OrderBook orderBook = new OrderBook(market, coinSymbol);
@@ -267,7 +226,7 @@ public class DynamicCrawler
 				buy = true;
 			}
 			
-			orderBook.addOrderBookElement(price, quantity, percentage, buy);
+			orderBook.getOrderBookElementList().add(new OrderBookElement(price, quantity, percentage, buy));
 		}
 
 		return orderBook;
