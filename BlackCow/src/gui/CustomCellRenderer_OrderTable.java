@@ -23,9 +23,9 @@ public class CustomCellRenderer_OrderTable extends DefaultTableCellRenderer
 		Color textColor, cellColor;
 		
 		if (row < 10)
-			cellColor = new Color(221, 237, 254);
+			cellColor = new Color(224, 246, 255);
 		else
-			cellColor = new Color(255, 248, 248);
+			cellColor = new Color(255, 225, 236);
 		textColor = getColor(num);
 		
 		switch (column)
