@@ -36,8 +36,9 @@ public class DynamicCrawler
 	private String upbitAddress = "https://upbit.com/home";
 	
 	
-	public DynamicCrawler()
+	public DynamicCrawler(boolean headless)
 	{
+		setHeadless(headless);
 		launchBrowser();
 		moveTo(createURL(Market.KRW, CoinSymbol.BTC));
 	}
@@ -62,7 +63,7 @@ public class DynamicCrawler
 			System.setProperty("webdriver.chrome.driver", file.getAbsolutePath());
 			
 			ChromeOptions options = new ChromeOptions();
-			options.setHeadless(headless);
+			options.setHeadless(isHeadless());
 			options.addArguments("disable-gpu");
 			
 			driver = new ChromeDriver(options);
@@ -333,5 +334,15 @@ public class DynamicCrawler
 	public void setReady(boolean isReady)
 	{
 		this.isReady = isReady;
+	}
+
+	public boolean isHeadless()
+	{
+		return headless;
+	}
+
+	public void setHeadless(boolean headless)
+	{
+		this.headless = headless;
 	}
 }
