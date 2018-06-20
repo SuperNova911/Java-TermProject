@@ -34,6 +34,7 @@ import upbit.DynamicCrawler;
 import upbit.JsonManager;
 import upbit.OrderBook;
 import upbit.JsonManager.JsonKey;
+import upbit.Order;
 import upbit.OrderBookElement;
 import upbit.Request.TermType;
 import upbit.Upbit;
@@ -112,6 +113,8 @@ public class GUI extends JFrame
 	
 	private ArrayList<CoinTableElement> coinTableElements;
 	private ArrayList<OrderTableElement> orderTableElements;
+	private ArrayList<TradeHistoryTableElement> tradeHistoryTableElements;
+	private ArrayList<TradeHistoryTableElement> tradeHistoryTableElements_Complete;
 
 	private int selectedRow;
 	private Market currentMarket;
@@ -1021,6 +1024,8 @@ public class GUI extends JFrame
 
 		coinTableElements = new ArrayList<CoinTableElement>();
 		orderTableElements = new ArrayList<OrderTableElement>();
+		tradeHistoryTableElements = new ArrayList<TradeHistoryTableElement>();
+		tradeHistoryTableElements_Complete = new ArrayList<TradeHistoryTableElement>();
 		selectedRow = 0;
 	}
 	
@@ -1191,7 +1196,7 @@ public class GUI extends JFrame
 		
 		for (int index = 0; index < list.size(); index++)
 		{
-			orderBookElement = orderBook.getOrder(index);
+			orderBookElement = orderBook.getOrderBookElement(index);
 			orderTableElement = getOrderTableElement(index);
 			orderTableElement.setPrice(orderBookElement.getPrice());
 			orderTableElement.setChangeRate(orderBookElement.getPercentage());
@@ -1465,12 +1470,7 @@ public class GUI extends JFrame
 
 			break;
 		}
-
-		/*
-		 * for (CoinTableElement element : coinTableElements) {
-		 * System.out.println(element.getTradePrice()); }
-		 */
-
+		double endTime = System.currentTimeMillis();
 	}
 	
 	public DefaultHighLowDataset createCandleStickDataset(CryptoCurrency cryptoCurrency, int start, int end)
@@ -1669,6 +1669,41 @@ public class GUI extends JFrame
 		return spinnerValueControl(kappa, false, getCurrentMarket());
 	}
 	
+	public void updateTradeHistoryTable()
+	{
+		tradeHistoryTableElements = new ArrayList<TradeHistoryTableElement>();
+		tradeHistoryTableElements_Complete = new ArrayList<TradeHistoryTableElement>();
+		
+		for (Order order : upbit.getAccount().getOrderList())
+		{
+			if (order.isConclusion())
+			{
+				tradeHistoryTableElements_Complete.add(new TradeHistoryTableElement(order));
+			}
+			else
+			{
+				tradeHistoryTableElements.add(new TradeHistoryTableElement(order));
+			}
+		}
+		
+		DefaultTableModel model = (DefaultTableModel) table_TradeHistoryComplete.getModel();
+		
+		model.setNumRows(0);
+		
+		for (TradeHistoryTableElement element : tradeHistoryTableElements_Complete)
+		{
+			model.addRow(element.getData());
+		}
+		
+		model = (DefaultTableModel) table_TradeHistoryNotComplete.getModel();
+		
+		model.setNumRows(0);
+		
+		for (TradeHistoryTableElement element : tradeHistoryTableElements)
+		{
+			model.addRow(element.getData());
+		}
+	}
 	
 	
 	
@@ -1724,7 +1759,7 @@ public class GUI extends JFrame
 			}
 
 			upbit.createOrder(getCurrentMarket(), getCurrentCoinSymbol(), tradePrice, quantity, buy);
-			// updateTradeHistory
+			updateTradeHistoryTable();
 		}
 		
 		public boolean getBuy()
