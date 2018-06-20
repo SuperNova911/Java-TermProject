@@ -148,8 +148,33 @@ public class CryptoCurrency implements Serializable
 	 * @param endIndex
 	 * @return [0] = 최소, [1] = 최대
 	 */
-	public double[] getMinMaxPrice(int startIndex, int endIndex)
+	public double[] getMinMaxPrice(int start, int end)
 	{
+		int startIndex, endIndex;
+		int cryptoEndIndex = getSize() - 1;
+		int requestSize = end - start + 1;
+		
+		if (getSize() >= requestSize)
+		{
+			if (cryptoEndIndex >= end)
+			{
+				startIndex = start;
+				endIndex = end;
+			}
+			else
+			{
+				startIndex = getSize() - requestSize;
+				endIndex = cryptoEndIndex;
+			}
+		}
+		else
+		{
+			startIndex = 0;
+			endIndex = getSize() - 1;
+			
+			requestSize = getSize();
+		}
+		
 		double min, max;
 		double highPrice, lowPrice;
 
