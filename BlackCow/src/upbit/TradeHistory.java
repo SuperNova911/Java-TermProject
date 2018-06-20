@@ -1,5 +1,7 @@
 package upbit;
 
+import java.util.Date;
+
 import upbit.CoinList.CoinSymbol;
 import upbit.CoinList.Market;
 
@@ -10,7 +12,7 @@ public class TradeHistory
 		Buy, Sell, Withdraw, Deposit
 	}
 
-	private double date;
+	private Date date;
 	private Market market;
 	private CoinSymbol coinSymbol;
 	private TradeType tradeType;
@@ -31,7 +33,7 @@ public class TradeHistory
 	 * @param totalPrice 정산금액(수수료반영)
 	 * @param fee 수수료
 	 */
-	public TradeHistory(double date, Market market, CoinSymbol coinSymbol, TradeType tradeType, double quantity,
+	public TradeHistory(Date date, Market market, CoinSymbol coinSymbol, TradeType tradeType, double quantity,
 			double tradePrice, double orderPrice, double totalPrice, double fee)
 	{
 		this.date = date;
@@ -47,12 +49,12 @@ public class TradeHistory
 	
 	
 	
-	public double getDate()
+	public Date getDate()
 	{
 		return date;
 	}
 
-	public void setDate(double date)
+	public void setDate(Date date)
 	{
 		this.date = date;
 	}
