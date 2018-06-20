@@ -75,7 +75,8 @@ public class Upbit
 
 		executor.scheduleAtFixedRate(() ->
 		{
-			getGui().updateCoinTable(gui.getCurrentMarket());
+			gui.updateCoinTable(gui.getCurrentMarket());
+			gui.updateInfo(gui.getCurrentMarket(), gui.getCurrentCoinSymbol());
 		}, 3, updateDelay, TimeUnit.SECONDS);
 
 		executor.scheduleAtFixedRate(() ->
