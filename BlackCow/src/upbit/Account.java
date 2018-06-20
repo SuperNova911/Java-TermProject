@@ -57,7 +57,7 @@ public class Account
 				return wallet;
 		}
 		
-		System.out.println("Failed to searchWallet: " + coinSymbol);
+//		System.out.println("Failed to searchWallet: " + coinSymbol);
 		
 		return null;
 	}
