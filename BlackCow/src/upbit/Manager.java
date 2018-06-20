@@ -28,13 +28,13 @@ public class Manager
 		startTime = System.currentTimeMillis();
 		
 		scheduledExecutor = new ScheduledThreadPoolExecutor(4);
-		executorService = new ThreadPoolExecutor(4, 8, 5, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+		executorService = new ThreadPoolExecutor(6, 8, 5, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
 		
 		account = new Account("id", "password", 5000000);
 		upbit = new Upbit(account);
 		
 		Future<?> futureUpbit = executorService.submit(()-> upbit = new Upbit(account));
-		Future<?> futureCrawler = executorService.submit(()-> crawler = new DynamicCrawler());
+		Future<?> futureCrawler = executorService.submit(()-> crawler = new DynamicCrawler(true));
 		Future<?> futureGui = executorService.submit(()-> gui = new GUI());
 
 		try
