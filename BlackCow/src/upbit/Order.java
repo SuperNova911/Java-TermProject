@@ -1,5 +1,7 @@
 package upbit;
 
+import java.util.Date;
+
 import upbit.CoinList.CoinSymbol;
 import upbit.CoinList.Market;
 
@@ -7,8 +9,8 @@ public class Order
 {
 	private Market market;
 	private CoinSymbol coinSymbol;
+	private Date date;
 	private int id;
-	private double date;
 	private double tradePrice;
 	private double quantity;
 	private double quantity_Conclusion;
@@ -25,7 +27,7 @@ public class Order
 	 * @param quantity 주문수량
 	 * @param buy 거래종류
 	 */
-	public Order(Market market, CoinSymbol coinSymbol, int id, double date, double tradePrice, double quantity, boolean buy)
+	public Order(Market market, CoinSymbol coinSymbol, int id, Date date, double tradePrice, double quantity, boolean buy)
 	{
 		this.market = market;
 		this.coinSymbol = coinSymbol;
@@ -79,12 +81,12 @@ public class Order
 		this.id = id;
 	}
 
-	public double getDate()
+	public Date getDate()
 	{
 		return date;
 	}
 
-	public void setDate(double date)
+	public void setDate(Date date)
 	{
 		this.date = date;
 	}
