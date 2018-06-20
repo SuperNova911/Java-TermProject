@@ -6,11 +6,14 @@ import upbit.CoinList.CoinSymbol;
 
 public class Account
 {
+	private ArrayList<Wallet> walletList;
+	private ArrayList<Order> orderList;
+	private ArrayList<TradeHistory> tradeHistoryList;
+	
 	private String id;
 	private String password;
 	private long KRW;
 	
-	private ArrayList<Wallet> walletList;
 	
 	
 	// 로그인 기능 구현
@@ -18,8 +21,11 @@ public class Account
 	{
 		this.id = id;
 		this.password = password;
-		this.walletList = new ArrayList<Wallet>();
 		this.KRW = KRW;
+
+		this.walletList = new ArrayList<Wallet>();
+		this.orderList = new ArrayList<Order>();
+		this.tradeHistoryList = new ArrayList<TradeHistory>();
 	}
 	
 	public boolean addWallet(Wallet wallet)
@@ -144,5 +150,25 @@ public class Account
 			KRW = 0;
 		
 		this.KRW = KRW;
+	}
+
+	public ArrayList<Order> getOrderList()
+	{
+		return orderList;
+	}
+
+	public void setOrderList(ArrayList<Order> orderList)
+	{
+		this.orderList = orderList;
+	}
+
+	public ArrayList<TradeHistory> getTradeHistoryList()
+	{
+		return tradeHistoryList;
+	}
+
+	public void setTradeHistoryList(ArrayList<TradeHistory> tradeHistoryList)
+	{
+		this.tradeHistoryList = tradeHistoryList;
 	}
 }
