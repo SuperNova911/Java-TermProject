@@ -4,6 +4,7 @@ import java.io.File;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -12,6 +13,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.jfree.date.DateUtilities;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -29,7 +31,6 @@ public class Upbit
 {
 	private ArrayList<CryptoCurrency> cryptoList;
 	private ArrayList<OrderBook> orderBookList;
-	private ArrayList<Order> orderList;
 	
 	private DynamicCrawler crawler;
 	private Account account;
@@ -48,7 +49,6 @@ public class Upbit
 		
 		cryptoList = new ArrayList<CryptoCurrency>();
 		orderBookList = new ArrayList<OrderBook>();
-		orderList = new ArrayList<Order>();
 
 		loadCryptoCurrency();
 	}
@@ -83,6 +83,8 @@ public class Upbit
 		{
 			if (crawler.isReady())
 				updateOrderBook(gui.getCurrentMarket(), gui.getCurrentCoinSymbol());
+			confirmOrder();
+			gui.updateTradeHistoryTable();
 		}, 0, updateDelay, TimeUnit.SECONDS);
 
 		executor.scheduleAtFixedRate(() ->
@@ -145,11 +147,85 @@ public class Upbit
 	{
 		gui.updateOrderTable(market, coinSymbol);
 		
-		OrderBook orderBook;
+		OrderBook orderBook = crawler.getOrderBook_Fast(market, coinSymbol);
 		
-		orderBook = crawler.getOrderBook_Fast(market, coinSymbol);
+		try
+		{
+			CryptoCurrency cryptoCurrency = getCryptoCurrency(createName(market, coinSymbol, TermType.minutes, 1));
+			double tradePrice = Double.parseDouble(cryptoCurrency.getData(JsonKey.tradePrice));
+			
+			for (int i = 0; i < orderBook.getOrderBookElementList().size(); i++)
+			{
+				if (orderBook.getOrderBookElement(i).getPrice() == tradePrice)
+				{
+					orderBook.setTradeIndex(i);
+					break;
+				}
+			}
+		}
+		catch (Exception e)
+		{
+			orderBook.setTradeIndex(10);
+		}
+		
 		addOrderBook(orderBook);
 		gui.updateOrderTable(market, coinSymbol);
+	}
+	
+	public void confirmOrder()
+	{
+		ArrayList<Order> orderList = account.getOrderList();
+		
+		double orderPrice, tradePrice;
+		
+		for (Order order : orderList)
+		{
+			if (order.isConclusion())
+				continue;
+			
+			orderPrice = order.getTradePrice();
+			
+			try
+			{
+				tradePrice = Double.parseDouble(getCryptoCurrency(createName(order.getMarket(), order.getCoinSymbol(), TermType.minutes, 1)).getData(JsonKey.tradePrice));
+			}
+			catch (Exception e)
+			{
+				try
+				{
+					tradePrice = Double.parseDouble(requestData(order.getMarket(), order.getCoinSymbol(), TermType.minutes, 1, 1).getData(JsonKey.tradePrice));
+				}
+				catch (Exception e1)
+				{
+					return;
+				}
+			}
+			
+			if (order.isBuy())
+			{
+				if (orderPrice >= tradePrice)
+				{
+					buy(order);
+					order.setQuantity_Conclusion(order.getQuantity());
+					order.setConclusion(true);
+					
+					System.out.println("Order confirmed");
+				}
+			}
+			else
+			{
+				if (orderPrice <= tradePrice)
+				{
+					sell(order);
+					order.setQuantity_Conclusion(order.getQuantity());
+					order.setConclusion(true);
+
+					System.out.println("Order confirmed");
+				}
+			}
+		}
+		
+		gui.updateBuySell(true);
 	}
 	
 	public CryptoCurrency requestData(Market market, CoinSymbol coinSymbol, TermType termType, int term, int dataAmount) throws Exception
@@ -173,34 +249,24 @@ public class Upbit
 	public void createOrder(Market market, CoinSymbol coinSymbol, double tradePrice, double quantity, boolean buy)
 	{
 		Order order;
-		
-		DecimalFormat decimalFormat;
-		decimalFormat = new DecimalFormat("00");
+		Date date = new Date();
 
 		int id = 0;	// юс╫ц
-		Calendar calendar = Calendar.getInstance();
-		double date = Double.parseDouble((
-				Integer.toString(calendar.get(Calendar.YEAR)) +
-				decimalFormat.format(calendar.get(Calendar.MONTH) + 1) +
-				decimalFormat.format(calendar.get(Calendar.DAY_OF_MONTH)) +
-				decimalFormat.format(calendar.get(Calendar.HOUR_OF_DAY)) +
-				decimalFormat.format(calendar.get(Calendar.MINUTE))));
 
 		order = new Order(market, coinSymbol, id, date, tradePrice, quantity, buy);
 		
 		System.out.println(order.toString());
 		
-		orderList.add(order);
+		account.getOrderList().add(order);
 	}
 	
-	public void kappa()
+
+	public boolean buy(Order order)
 	{
+		Market market = order.getMarket();
+		CoinSymbol coinSymbol = order.getCoinSymbol();
 		
-	}
-	
-	public boolean buy(Market market, CoinSymbol coinSymbol, double price, double quantity)
-	{
-		double totalPrice = price * quantity;
+		double totalPrice = order.getTotalPrice();
 		double balance = 0;
 		
 		if (market == Market.KRW)
@@ -223,20 +289,17 @@ public class Upbit
 			account.subtractBalance(CoinSymbol.ETC, totalPrice);
 			break;
 		}
-		
-		if (balance >= totalPrice)
-		{
-			account.addBalance(coinSymbol, quantity, price);
-			
-			return true;
-		}
 
-		return false;
+		account.addBalance(coinSymbol, order.getQuantity(), order.getTradePrice());
+		return true;
 	}
 	
-	public boolean sell(Market market, CoinSymbol coinSymbol, double price, double quantity)
+	public boolean sell(Order order)
 	{
-		double totalPrice = price * quantity;
+		Market market = order.getMarket();
+		CoinSymbol coinSymbol = order.getCoinSymbol();
+
+		double totalPrice = order.getTotalPrice();
 		double balance = account.getBalance(coinSymbol);
 		
 		if (market == Market.KRW)
@@ -249,21 +312,23 @@ public class Upbit
 			break;
 			
 		case BTC:
-			account.addBalance(coinSymbol, totalPrice, price);
+			account.addBalance(coinSymbol, totalPrice, order.getTradePrice());
 			break;
 			
 		case ETH:
-			account.addBalance(coinSymbol, totalPrice, price);
+			account.addBalance(coinSymbol, totalPrice, order.getTradePrice());
 			break;
 		}
+
+		account.subtractBalance(coinSymbol, order.getQuantity());
+		return true;
 		
-		if (balance >= quantity)
-		{
-			account.subtractBalance(coinSymbol, quantity);
-			return true;
-		}
-		
-		return false;
+//		if (balance >= order.getQuantity())
+//		{
+//			return true;
+//		}
+//		
+//		return false;
 	}
 	
 	public double getTradePrice(Market market, CoinSymbol coinSymbol)
