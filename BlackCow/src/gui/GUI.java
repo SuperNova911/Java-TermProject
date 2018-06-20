@@ -47,6 +47,8 @@ import javax.swing.JLabel;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.JSpinner;
+import javax.swing.JSpinner.NumberEditor;
+
 import java.awt.Button;
 import javax.swing.JButton;
 import java.awt.Color;
@@ -98,6 +100,9 @@ import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JSlider;
 import javax.swing.UIManager;
+import javax.swing.SpinnerNumberModel;
+import java.awt.event.MouseWheelListener;
+import java.awt.event.MouseWheelEvent;
 
 public class GUI extends JFrame
 {
@@ -219,6 +224,7 @@ public class GUI extends JFrame
 		panel_Right.add(scrollPane_OrderBook);
 		
 		table_OrderBook = new JTable();
+		table_OrderBook.addMouseListener(new TableListener_OrderBook());
 		table_OrderBook.setBackground(Color.WHITE);
 		table_OrderBook.setShowVerticalLines(false);
 		table_OrderBook.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
@@ -283,6 +289,7 @@ public class GUI extends JFrame
 		panel_Buy.setLayout(null);
 		
 		textField_BuyQuantity = new JTextField();
+		textField_BuyQuantity.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
 		textField_BuyQuantity.addActionListener(e ->
 		{
 			String text = textField_BuyQuantity.getText();
@@ -317,10 +324,29 @@ public class GUI extends JFrame
 		label_BuyQuantitySymbol.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
 		label_BuyQuantitySymbol.setBounds(220, 94, 62, 15);
 		panel_Buy.add(label_BuyQuantitySymbol);
-		
+
 		spinner_BuyPrice = new JSpinner();
+		spinner_BuyPrice.addMouseWheelListener(new MouseWheelListener()
+		{
+			public void mouseWheelMoved(MouseWheelEvent e)
+			{
+				// Wheel Up
+				if (e.getPreciseWheelRotation() < 0)
+				{
+					double price = spinnerValueControl(getBuyPrice(), true, getCurrentMarket());
+					setBuyPrice(price);
+					updateBuySell(false);
+				}
+				//Wheel Down
+				else
+				{
+					double price = spinnerValueControl(getBuyPrice(), false, getCurrentMarket());
+					setBuyPrice(price);
+					updateBuySell(false);
+				}
+			}
+		});
 		// Increase ¹öÆ°
-		((JButton) spinner_BuyPrice.getComponent(0)).removeActionListener(((JButton) spinner_BuyPrice.getComponent(0)).getActionListeners()[0]);
 		((JButton) spinner_BuyPrice.getComponent(0)).addActionListener(e ->
 		{
 			double price = spinnerValueControl(getBuyPrice(), true, getCurrentMarket());
@@ -328,13 +354,14 @@ public class GUI extends JFrame
 			updateBuySell(false);
 		});
 		// Decrease ¹öÆ°
-		((JButton) spinner_BuyPrice.getComponent(1)).removeActionListener(((JButton) spinner_BuyPrice.getComponent(1)).getActionListeners()[0]);
 		((JButton) spinner_BuyPrice.getComponent(1)).addActionListener(e ->
 		{
 			double price = spinnerValueControl(getBuyPrice(), false, getCurrentMarket());
 			setBuyPrice(price);
 			updateBuySell(false);
 		});
+		spinner_BuyPrice.setModel(new SpinnerNumberModel(new Integer(0), null, null, new Integer(0)));
+		spinner_BuyPrice.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
 		spinner_BuyPrice.setBounds(41, 56, 175, 21);
 		panel_Buy.add(spinner_BuyPrice);
 		
@@ -407,6 +434,7 @@ public class GUI extends JFrame
 		panel_Sell.setLayout(null);
 		
 		textField_SellQuantity = new JTextField();
+		textField_SellQuantity.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
 		textField_SellQuantity.addActionListener(e ->
 		{
 			String text = textField_BuyQuantity.getText();
@@ -443,8 +471,28 @@ public class GUI extends JFrame
 		panel_Sell.add(label_SellQuantitySymbol);
 		
 		spinner_SellPrice = new JSpinner();
+		spinner_SellPrice.addMouseWheelListener(new MouseWheelListener()
+		{
+			@Override
+			public void mouseWheelMoved(MouseWheelEvent e)
+			{
+				// Wheel Up
+				if (e.getWheelRotation() < 0)
+				{
+					double price = spinnerValueControl(getSellPrice(), true, getCurrentMarket());
+					setSellPrice(price);
+					updateBuySell(false);
+				}
+				// Wheel Down
+				else
+				{
+					double price = spinnerValueControl(getSellPrice(), false, getCurrentMarket());
+					setSellPrice(price);
+					updateBuySell(false);
+				}
+			}
+		});
 		// Increase ¹öÆ°
-		((JButton) spinner_SellPrice.getComponent(0)).removeActionListener(((JButton) spinner_SellPrice.getComponent(0)).getActionListeners()[0]);
 		((JButton) spinner_SellPrice.getComponent(0)).addActionListener(e ->
 		{
 			double price = spinnerValueControl(getSellPrice(), true, getCurrentMarket());
@@ -452,13 +500,14 @@ public class GUI extends JFrame
 			updateBuySell(false);
 		});
 		// Decrease ¹öÆ°
-		((JButton) spinner_SellPrice.getComponent(1)).removeActionListener(((JButton) spinner_SellPrice.getComponent(1)).getActionListeners()[0]);
 		((JButton) spinner_SellPrice.getComponent(1)).addActionListener(e ->
 		{
 			double price = spinnerValueControl(getSellPrice(), false, getCurrentMarket());
 			setSellPrice(price);
 			updateBuySell(false);
 		});
+		spinner_SellPrice.setModel(new SpinnerNumberModel(new Integer(0), null, null, new Integer(0)));
+		spinner_SellPrice.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
 		spinner_SellPrice.setBounds(41, 56, 175, 21);
 		panel_Sell.add(spinner_SellPrice);
 		
@@ -520,6 +569,7 @@ public class GUI extends JFrame
 		panel_Sell.add(label_SellBalance);
 		
 		comboBox_SellQuantity = new JComboBox<String>();
+		comboBox_SellQuantity.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
 		comboBox_SellQuantity.addActionListener(new ComboListener_BuySell(false));
 		comboBox_SellQuantity.setModel(new DefaultComboBoxModel<String>(new String[] {"100%", "75%", "50%", "25%"}));
 		comboBox_SellQuantity.setBounds(156, 92, 60, 21);
@@ -801,7 +851,7 @@ public class GUI extends JFrame
 		table_KRW.setRowHeight(40);
 		table_KRW.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
 		table_KRW.getTableHeader().setReorderingAllowed(false);
-		table_KRW.addMouseListener(new Table_Select(table_KRW));
+		table_KRW.addMouseListener(new TableListener_Coin(table_KRW));
 		scrollPane_KRW.setViewportView(table_KRW);
 		
 		JPanel panel_BTC = new JPanel();
@@ -853,7 +903,7 @@ public class GUI extends JFrame
 		table_BTC.setRowHeight(40);
 		table_BTC.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
 		table_BTC.getTableHeader().setReorderingAllowed(false);
-		table_BTC.addMouseListener(new Table_Select(table_BTC));
+		table_BTC.addMouseListener(new TableListener_Coin(table_BTC));
 		scrollPane_BTC.setViewportView(table_BTC);
 		
 		JPanel panel_ETH = new JPanel();
@@ -905,7 +955,7 @@ public class GUI extends JFrame
 		table_ETH.setRowHeight(40);
 		table_ETH.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
 		table_ETH.getTableHeader().setReorderingAllowed(false);
-		table_ETH.addMouseListener(new Table_Select(table_ETH));
+		table_ETH.addMouseListener(new TableListener_Coin(table_ETH));
 		scrollPane_ETH.setViewportView(table_ETH);
 		
 		JPanel panel_MyCoin = new JPanel();
@@ -1213,14 +1263,14 @@ public class GUI extends JFrame
 			else
 			{
 				quantity = balance * ratio / price;
-				total = market == Market.KRW ? Math.round(quantity * price) : Math.round(quantity * price * 100000000) / 100000000;
+				total = market == Market.KRW ? Math.round(quantity * price) : Math.round(quantity * price * 100000000d) / 100000000d;
 			}
 		}
 		else
 		{
 			quantity = getBuyQuantity();
 			
-			total = market == Market.KRW ? Math.round(quantity * price) : Math.round(quantity * price * 100000000) / 100000000;
+			total = market == Market.KRW ? Math.round(quantity * price) : Math.round(quantity * price * 100000000d) / 100000000d;
 		}
 		
 		setBuyBalance(balance);
@@ -1244,14 +1294,14 @@ public class GUI extends JFrame
 			else
 			{
 				quantity = balance * ratio;
-				total = market == Market.KRW ? Math.round(quantity * price) : Math.round(quantity * price * 1000000000/ 100000000);
+				total = market == Market.KRW ? Math.round(quantity * price) : Math.round(quantity * price * 1000000000d / 100000000d);
 			}
 		}
 		else
 		{
 			quantity = getSellQuantity();
-			
-			total = market == Market.KRW ? Math.round(quantity * price) : Math.round(quantity * price * 1000000000/ 100000000);
+
+			total = market == Market.KRW ? Math.round(quantity * price) : Math.round(quantity * price * 1000000000d / 100000000d);
 		}
 		
 		setSellBalance(balance);
@@ -1652,16 +1702,18 @@ public class GUI extends JFrame
 			
 			if (buy)
 			{
-				if (getBuyBalance() < getBuyTotal())
+				if (getBuyBalance() < getBuyTotal() || getBuyBalance() == 0)
 				{
 					// ÀÜ°í ºÎÁ·
 					return;
 				}
-				
+
+				tradePrice = getBuyPrice();
+				quantity = getBuyQuantity();
 			}
 			else
 			{
-				if (getSellBalance() < getSellQuantity())
+				if (getSellBalance() < getSellQuantity() || getSellBalance() == 0)
 				{
 					// ÀÜ°í ºÎÁ·
 					return;
@@ -1671,7 +1723,7 @@ public class GUI extends JFrame
 				quantity = getSellQuantity();
 			}
 
-			upbit.createOrder(getCurrentMarket(), getCurrentCoinSymbol(), getBuyPrice(), getBuyQuantity(), buy);
+			upbit.createOrder(getCurrentMarket(), getCurrentCoinSymbol(), tradePrice, quantity, buy);
 			// updateTradeHistory
 		}
 		
@@ -1686,11 +1738,11 @@ public class GUI extends JFrame
 		}
 	}
 	
-	class Table_Select implements MouseListener
+	class TableListener_Coin implements MouseListener
 	{
 		private JTable jTable;
 		
-		public Table_Select(JTable jTable)
+		public TableListener_Coin(JTable jTable)
 		{
 			this.jTable = jTable;
 		}
@@ -1744,6 +1796,53 @@ public class GUI extends JFrame
 			// TODO ÀÚµ¿ »ý¼ºµÈ ¸Þ¼Òµå ½ºÅÓ
 			
 		}
+	}
+	
+	class TableListener_OrderBook implements MouseListener
+	{
+
+		@Override
+		public void mouseClicked(java.awt.event.MouseEvent e)
+		{
+			int select = table_OrderBook.getSelectedRow();
+			OrderTableElement element = orderTableElements.get(select);
+			
+			double tradePrice = element.getPrice();
+			
+			setBuyPrice(tradePrice);
+			setSellPrice(tradePrice);
+			
+			updateBuySell(false);
+		}
+
+		@Override
+		public void mouseEntered(java.awt.event.MouseEvent e)
+		{
+			// TODO ÀÚµ¿ »ý¼ºµÈ ¸Þ¼Òµå ½ºÅÓ
+
+		}
+
+		@Override
+		public void mouseExited(java.awt.event.MouseEvent e)
+		{
+			// TODO ÀÚµ¿ »ý¼ºµÈ ¸Þ¼Òµå ½ºÅÓ
+
+		}
+
+		@Override
+		public void mousePressed(java.awt.event.MouseEvent e)
+		{
+			// TODO ÀÚµ¿ »ý¼ºµÈ ¸Þ¼Òµå ½ºÅÓ
+
+		}
+
+		@Override
+		public void mouseReleased(java.awt.event.MouseEvent e)
+		{
+			// TODO ÀÚµ¿ »ý¼ºµÈ ¸Þ¼Òµå ½ºÅÓ
+
+		}
+
 	}
 
 	class TabListener implements ChangeListener
@@ -1937,7 +2036,7 @@ public class GUI extends JFrame
 		if (buyQuantity < 0)
 			buyQuantity = 0;
 		
-		this.buyQuantity = buyQuantity;
+		this.buyQuantity = Math.round(buyQuantity * 100000000d) / 100000000d;
 	}
 
 	public double getBuyTotal()
