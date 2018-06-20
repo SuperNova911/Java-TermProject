@@ -12,14 +12,20 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartMouseEvent;
+import org.jfree.chart.ChartMouseListener;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.NumberTickUnit;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.DefaultHighLowDataset;
 import org.jfree.date.DateUtilities;
+import org.jfree.util.StrokeList;
 import org.json.simple.JSONObject;
 import org.w3c.dom.events.MouseEvent;
 
+import upbit.Account;
 import upbit.CoinList;
 import upbit.CoinList.CoinSymbol;
 import upbit.CoinList.Market;
@@ -55,6 +61,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import java.awt.Label;
+import java.awt.Stroke;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
@@ -87,6 +94,10 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.Component;
 import javax.swing.border.CompoundBorder;
+import javax.swing.JComboBox;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JSlider;
+import javax.swing.UIManager;
 
 public class GUI extends JFrame
 {
@@ -100,10 +111,14 @@ public class GUI extends JFrame
 	private int selectedRow;
 	private Market currentMarket;
 	private CoinSymbol currentCoinSymbol;
+	private TermType currentTermType;
+	private int currentTerm;
 	
+	private double buyBalance;
 	private double buyPrice;
 	private double buyQuantity;
 	private double buyTotal;
+	private double sellBalance;
 	private double sellPrice;
 	private double sellQuantity;
 	private double sellTotal;
@@ -116,17 +131,18 @@ public class GUI extends JFrame
 	private ChartPanel chartPanel;
 	private JFreeChart chart;
 	
-	private JTextField textField_BuyQuantity;
-	private JTextField textField_BuyTotal;
-	private JTextField textField_SellQuantity;
-	private JTextField textField_SellTotal;
 	private JTextField textField_SearchKRW;
 	private JTextField textField_searchMyCoin;
 	private JTextField textField_SearchBTC;
 	private JTextField textField_SearchETH;
 
-	private JSpinner spinner_SellPrice;
 	private JSpinner spinner_BuyPrice;
+	private JSpinner spinner_SellPrice;
+	private JTextField textField_BuyQuantity;
+	private JTextField textField_SellQuantity;
+	private JComboBox<String> comboBox_BuyQuantity;
+	private JComboBox<String> comboBox_SellQuantity;
+	private JComboBox<String> comboBox_ChartTermType;
 	
 	private JTable table_KRW;
 	private JTable table_BTC;
@@ -136,12 +152,6 @@ public class GUI extends JFrame
 	private JTable table_TradeHistoryNotComplete;
 	private JTable table_TradeHistoryComplete;
 	
-	private JLabel label_BuyPriceSymbol;
-	private JLabel label_BuyQuantitySymbol;
-	private JLabel label_BuyTotalSymbol;
-	private JLabel label_SellPriceSymbol;
-	private JLabel label_SellQuantitySymbol;
-	private JLabel label_SellTotalSymbol;
 	private JLabel label_InfoHighPrice;
 	private JLabel label_InfoLowPrice;
 	private JLabel label_InfoTradePrice;
@@ -150,6 +160,21 @@ public class GUI extends JFrame
 	private JLabel label_InfoVolume;
 	private JLabel label_InfoChangeRate;
 	private JLabel label_InfoChangePrice;
+	
+	private JLabel label_BuyBalance;
+	private JLabel label_BuyTotal;
+	private JLabel label_BuyBalanceSymbol;
+	private JLabel label_BuyPriceSymbol;
+	private JLabel label_BuyQuantitySymbol;
+	private JLabel label_BuyTotalSymbol;
+	private JLabel label_SellBalance;
+	private JLabel label_SellTotal;
+	private JLabel label_SellBalanceSymbol;
+	private JLabel label_SellPriceSymbol;
+	private JLabel label_SellQuantitySymbol;
+	private JLabel label_SellTotalSymbol;
+	
+	private JLabel label_ChartInfo;
 
 
 
@@ -157,7 +182,7 @@ public class GUI extends JFrame
 	{
 		setTitle("ºí·¢¸»¶ûÄ«¿ì");
 		setResizable(false);
-		setBounds(0, 0, 1280, 720);
+		setBounds(0, 0, 1440, 810);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -177,21 +202,24 @@ public class GUI extends JFrame
 		
 		
 		JPanel panel_Right = new JPanel();
+		panel_Right.setBackground(Color.WHITE);
 		panel_Right.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panel_Right.setBounds(975, 21, 300, 669);
+		panel_Right.setBounds(1134, 21, 300, 760);
 		contentPane.add(panel_Right);
 		panel_Right.setLayout(null);
 		
 		JPanel panel_3 = new JPanel();
+		panel_3.setBackground(Color.WHITE);
 		panel_3.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panel_3.setBounds(0, 0, 300, 150);
+		panel_3.setBounds(0, 0, 300, 160);
 		panel_Right.add(panel_3);
 		
 		JScrollPane scrollPane_OrderBook = new JScrollPane();
-		scrollPane_OrderBook.setBounds(0, 150, 300, 519);
+		scrollPane_OrderBook.setBounds(0, 160, 300, 603);
 		panel_Right.add(scrollPane_OrderBook);
 		
 		table_OrderBook = new JTable();
+		table_OrderBook.setBackground(Color.WHITE);
 		table_OrderBook.setShowVerticalLines(false);
 		table_OrderBook.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
 		table_OrderBook.setModel(new DefaultTableModel(
@@ -233,187 +261,273 @@ public class GUI extends JFrame
 		
 		JPanel panel_Center = new JPanel();
 		panel_Center.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panel_Center.setBounds(300, 21, 675, 669);
+		panel_Center.setBounds(300, 21, 834, 760);
 		contentPane.add(panel_Center);
 		panel_Center.setLayout(null);
 		
 		JPanel panel_Bottom = new JPanel();
 		panel_Bottom.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panel_Bottom.setBounds(0, 439, 675, 230);
+		panel_Bottom.setBounds(0, 490, 834, 270);
 		panel_Center.add(panel_Bottom);
 		panel_Bottom.setLayout(null);
 		
 		JTabbedPane tabbedPane_BuySell = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane_BuySell.setBackground(Color.WHITE);
 		tabbedPane_BuySell.setBorder(null);
-		tabbedPane_BuySell.setBounds(445, 0, 230, 230);
+		tabbedPane_BuySell.setBounds(564, 0, 270, 270);
 		panel_Bottom.add(tabbedPane_BuySell);
 		
 		JPanel panel_Buy = new JPanel();
+		panel_Buy.setBackground(Color.WHITE);
 		tabbedPane_BuySell.addTab("¸Å¼ö", null, panel_Buy, null);
 		panel_Buy.setLayout(null);
 		
 		textField_BuyQuantity = new JTextField();
+		textField_BuyQuantity.addActionListener(e ->
+		{
+			String text = textField_BuyQuantity.getText();
+			double quantity;
+
+			try
+			{
+				quantity = Double.parseDouble(text);
+				
+				if (quantity < 0)
+					quantity = 0;
+				
+				setBuyQuantity(quantity);
+				updateBuySell(false);
+			}
+			catch (NumberFormatException e1)
+			{
+				updateBuySell(false);
+			}
+		});
 		textField_BuyQuantity.setHorizontalAlignment(SwingConstants.RIGHT);
-		textField_BuyQuantity.setBounds(41, 38, 134, 21);
+		textField_BuyQuantity.setBounds(41, 92, 116, 21);
 		panel_Buy.add(textField_BuyQuantity);
 		textField_BuyQuantity.setColumns(10);
 		
-		JLabel label_BuyQuantity = new JLabel("¼ö·®");
-		label_BuyQuantity.setBounds(12, 41, 51, 15);
-		panel_Buy.add(label_BuyQuantity);
+		JLabel label_BuyQuantityText = new JLabel("¼ö·®");
+		label_BuyQuantityText.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
+		label_BuyQuantityText.setBounds(12, 94, 51, 15);
+		panel_Buy.add(label_BuyQuantityText);
 		
-		label_BuyQuantitySymbol = new JLabel("BTC");
-		label_BuyQuantitySymbol.setBounds(183, 41, 62, 15);
+		label_BuyQuantitySymbol = new JLabel("Symbol");
+		label_BuyQuantitySymbol.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
+		label_BuyQuantitySymbol.setBounds(220, 94, 62, 15);
 		panel_Buy.add(label_BuyQuantitySymbol);
 		
 		spinner_BuyPrice = new JSpinner();
-		spinner_BuyPrice.setBounds(41, 10, 134, 21);
+		// Increase ¹öÆ°
+		((JButton) spinner_BuyPrice.getComponent(0)).removeActionListener(((JButton) spinner_BuyPrice.getComponent(0)).getActionListeners()[0]);
+		((JButton) spinner_BuyPrice.getComponent(0)).addActionListener(e ->
+		{
+			double price = spinnerValueControl(getBuyPrice(), true, getCurrentMarket());
+			setBuyPrice(price);
+			updateBuySell(false);
+		});
+		// Decrease ¹öÆ°
+		((JButton) spinner_BuyPrice.getComponent(1)).removeActionListener(((JButton) spinner_BuyPrice.getComponent(1)).getActionListeners()[0]);
+		((JButton) spinner_BuyPrice.getComponent(1)).addActionListener(e ->
+		{
+			double price = spinnerValueControl(getBuyPrice(), false, getCurrentMarket());
+			setBuyPrice(price);
+			updateBuySell(false);
+		});
+		spinner_BuyPrice.setBounds(41, 56, 175, 21);
 		panel_Buy.add(spinner_BuyPrice);
 		
-		JLabel label_BuyPrice = new JLabel("°¡°Ý");
-		label_BuyPrice.setBounds(12, 13, 51, 15);
-		panel_Buy.add(label_BuyPrice);
+		JLabel label_BuyPriceText = new JLabel("°¡°Ý");
+		label_BuyPriceText.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
+		label_BuyPriceText.setBounds(12, 58, 51, 15);
+		panel_Buy.add(label_BuyPriceText);
 		
-		label_BuyPriceSymbol = new JLabel("KRW");
-		label_BuyPriceSymbol.setBounds(183, 11, 62, 15);
+		label_BuyPriceSymbol = new JLabel("Symbol");
+		label_BuyPriceSymbol.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
+		label_BuyPriceSymbol.setBounds(220, 58, 62, 15);
 		panel_Buy.add(label_BuyPriceSymbol);
 		
-		JButton button_Buy25 = new JButton("25%");
-		button_Buy25.setBounds(5, 66, 108, 23);
-		button_Buy25.addActionListener(new button_BuySellRatio(true, 0.25));
-		panel_Buy.add(button_Buy25);
-		
-		JButton button_Buy50 = new JButton("50%");
-		button_Buy50.setBounds(113, 66, 108, 23);
-		button_Buy50.addActionListener(new button_BuySellRatio(true, 0.50));
-		panel_Buy.add(button_Buy50);
-		
-		JButton button_Buy75 = new JButton("75%");
-		button_Buy75.setBounds(5, 89, 108, 23);
-		button_Buy75.addActionListener(new button_BuySellRatio(true, 0.75));
-		panel_Buy.add(button_Buy75);
-		
-		JButton button_Buy100 = new JButton("100%");
-		button_Buy100.setBounds(113, 89, 108, 23);
-		button_Buy100.addActionListener(new button_BuySellRatio(true, 1.0));
-		panel_Buy.add(button_Buy100);
-		
-		textField_BuyTotal = new JTextField();
-		textField_BuyTotal.setFont(new Font("±¼¸²", Font.BOLD, 12));
-		textField_BuyTotal.setForeground(Color.RED);
-		textField_BuyTotal.addActionListener(new ActionListener() 
-		{
-			public void actionPerformed(ActionEvent arg0) 
-			{
-				updateBuySell();
-			}
-		});
-		textField_BuyTotal.setHorizontalAlignment(SwingConstants.RIGHT);
-		textField_BuyTotal.setEditable(false);
-		textField_BuyTotal.setBounds(41, 129, 134, 21);
-		panel_Buy.add(textField_BuyTotal);
-		textField_BuyTotal.setColumns(10);
-		
 		JButton button_BuyRequest = new JButton("¸Å¼ö");
-		button_BuyRequest.addActionListener(new button_BuySell(true));
+		button_BuyRequest.addActionListener(new Button_BuySell(true));
 		button_BuyRequest.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 14));
 		button_BuyRequest.setForeground(Color.WHITE);
 		button_BuyRequest.setBackground(Color.RED);
-		button_BuyRequest.setBounds(12, 160, 201, 31);
+		button_BuyRequest.setBounds(12, 200, 241, 31);
 		panel_Buy.add(button_BuyRequest);
 		
-		JLabel label_BuyTotal = new JLabel("ÃÑ¾×");
-		label_BuyTotal.setBounds(12, 132, 57, 15);
-		panel_Buy.add(label_BuyTotal);
+		JPanel panel_buyTotal = new JPanel();
+		panel_buyTotal.setLayout(null);
+		panel_buyTotal.setBounds(12, 146, 241, 39);
+		panel_Buy.add(panel_buyTotal);
 		
-		label_BuyTotalSymbol = new JLabel("KRW");
-		label_BuyTotalSymbol.setBounds(183, 132, 62, 15);
-		panel_Buy.add(label_BuyTotalSymbol);
+		label_BuyTotal = new JLabel("0");
+		label_BuyTotal.setHorizontalAlignment(SwingConstants.RIGHT);
+		label_BuyTotal.setForeground(Color.RED);
+		label_BuyTotal.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 16));
+		label_BuyTotal.setBounds(69, 9, 130, 15);
+		panel_buyTotal.add(label_BuyTotal);
+		
+		JLabel label_BuyTotalText = new JLabel("\uC8FC\uBB38\uCD1D\uC561");
+		label_BuyTotalText.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 12));
+		label_BuyTotalText.setBounds(12, 11, 57, 15);
+		panel_buyTotal.add(label_BuyTotalText);
+		
+		label_BuyTotalSymbol = new JLabel("Symbol");
+		label_BuyTotalSymbol.setBounds(200, 10, 62, 15);
+		panel_buyTotal.add(label_BuyTotalSymbol);
+		label_BuyTotalSymbol.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
+		
+		JLabel label_BalanceText = new JLabel("\uC8FC\uBB38\uAC00\uB2A5");
+		label_BalanceText.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
+		label_BalanceText.setBounds(12, 20, 57, 15);
+		panel_Buy.add(label_BalanceText);
+		
+		comboBox_BuyQuantity = new JComboBox<String>();
+		comboBox_BuyQuantity.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
+		comboBox_BuyQuantity.addActionListener(new ComboListener_BuySell(true));
+		comboBox_BuyQuantity.setModel(new DefaultComboBoxModel<String>(new String[] {"100%", "75%", "50%", "25%"}));
+		comboBox_BuyQuantity.setBounds(156, 92, 60, 21);
+		panel_Buy.add(comboBox_BuyQuantity);
+		
+		label_BuyBalanceSymbol = new JLabel("Symbol");
+		label_BuyBalanceSymbol.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
+		label_BuyBalanceSymbol.setBounds(220, 20, 57, 15);
+		panel_Buy.add(label_BuyBalanceSymbol);
+		
+		label_BuyBalance = new JLabel("0\r\n");
+		label_BuyBalance.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 14));
+		label_BuyBalance.setHorizontalAlignment(SwingConstants.RIGHT);
+		label_BuyBalance.setBounds(62, 20, 154, 15);
+		panel_Buy.add(label_BuyBalance);
 		
 		JPanel panel_Sell = new JPanel();
+		panel_Sell.setBackground(Color.WHITE);
 		tabbedPane_BuySell.addTab("¸Åµµ", null, panel_Sell, null);
 		panel_Sell.setLayout(null);
 		
 		textField_SellQuantity = new JTextField();
-		textField_SellQuantity.addActionListener(new ActionListener() 
+		textField_SellQuantity.addActionListener(e ->
 		{
-			public void actionPerformed(ActionEvent arg0) 
+			String text = textField_BuyQuantity.getText();
+			double quantity;
+
+			try
 			{
-				updateBuySell();
+				quantity = Double.parseDouble(text);
+				
+				if (quantity < 0)
+					quantity = 0;
+				
+				setSellQuantity(quantity);
+				updateBuySell(false);
+			}
+			catch (NumberFormatException e1)
+			{
+				updateBuySell(false);
 			}
 		});
 		textField_SellQuantity.setHorizontalAlignment(SwingConstants.RIGHT);
 		textField_SellQuantity.setColumns(10);
-		textField_SellQuantity.setBounds(41, 38, 134, 21);
+		textField_SellQuantity.setBounds(41, 92, 116, 21);
 		panel_Sell.add(textField_SellQuantity);
 		
-		JLabel label_SellQuantity = new JLabel("¼ö·®");
-		label_SellQuantity.setBounds(12, 41, 51, 15);
-		panel_Sell.add(label_SellQuantity);
+		JLabel label_SellQuantityText = new JLabel("¼ö·®");
+		label_SellQuantityText.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
+		label_SellQuantityText.setBounds(12, 94, 51, 15);
+		panel_Sell.add(label_SellQuantityText);
 		
-		label_SellQuantitySymbol = new JLabel("BTC");
-		label_SellQuantitySymbol.setBounds(183, 41, 62, 15);
+		label_SellQuantitySymbol = new JLabel("Symbol");
+		label_SellQuantitySymbol.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
+		label_SellQuantitySymbol.setBounds(220, 94, 62, 15);
 		panel_Sell.add(label_SellQuantitySymbol);
 		
 		spinner_SellPrice = new JSpinner();
-		spinner_SellPrice.setBounds(41, 10, 134, 21);
+		// Increase ¹öÆ°
+		((JButton) spinner_SellPrice.getComponent(0)).removeActionListener(((JButton) spinner_SellPrice.getComponent(0)).getActionListeners()[0]);
+		((JButton) spinner_SellPrice.getComponent(0)).addActionListener(e ->
+		{
+			double price = spinnerValueControl(getSellPrice(), true, getCurrentMarket());
+			setSellPrice(price);
+			updateBuySell(false);
+		});
+		// Decrease ¹öÆ°
+		((JButton) spinner_SellPrice.getComponent(1)).removeActionListener(((JButton) spinner_SellPrice.getComponent(1)).getActionListeners()[0]);
+		((JButton) spinner_SellPrice.getComponent(1)).addActionListener(e ->
+		{
+			double price = spinnerValueControl(getSellPrice(), false, getCurrentMarket());
+			setSellPrice(price);
+			updateBuySell(false);
+		});
+		spinner_SellPrice.setBounds(41, 56, 175, 21);
 		panel_Sell.add(spinner_SellPrice);
 		
-		JLabel label_SellPrice = new JLabel("°¡°Ý");
-		label_SellPrice.setBounds(12, 13, 51, 15);
-		panel_Sell.add(label_SellPrice);
+		JLabel label_SellPriceText = new JLabel("°¡°Ý");
+		label_SellPriceText.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
+		label_SellPriceText.setBounds(12, 58, 51, 15);
+		panel_Sell.add(label_SellPriceText);
 		
-		label_SellPriceSymbol = new JLabel("KRW");
-		label_SellPriceSymbol.setBounds(183, 11, 62, 15);
+		label_SellPriceSymbol = new JLabel("Symbol");
+		label_SellPriceSymbol.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
+		label_SellPriceSymbol.setBounds(220, 58, 62, 15);
 		panel_Sell.add(label_SellPriceSymbol);
 		
-		JButton button_Sell25 = new JButton("25%");
-		button_Sell25.setBounds(5, 66, 108, 23);
-		button_Sell25.addActionListener(new button_BuySellRatio(false, 0.25));
-		panel_Sell.add(button_Sell25);
-		
-		JButton button_Sell50 = new JButton("50%");
-		button_Sell50.setBounds(113, 66, 108, 23);
-		button_Sell50.addActionListener(new button_BuySellRatio(false, 0.50));
-		panel_Sell.add(button_Sell50);
-		
-		JButton button_Sell75 = new JButton("75%");
-		button_Sell75.setBounds(5, 89, 108, 23);
-		button_Sell75.addActionListener(new button_BuySellRatio(false, 0.75));
-		panel_Sell.add(button_Sell75);
-		
-		JButton button_Sell100 = new JButton("100%");
-		button_Sell100.setBounds(113, 89, 108, 23);
-		button_Sell100.addActionListener(new button_BuySellRatio(false, 1.0));
-		panel_Sell.add(button_Sell100);
-		
-		textField_SellTotal = new JTextField();
-		textField_SellTotal.setForeground(Color.BLUE);
-		textField_SellTotal.setFont(new Font("±¼¸²", Font.BOLD, 12));
-		textField_SellTotal.setHorizontalAlignment(SwingConstants.RIGHT);
-		textField_SellTotal.setEditable(false);
-		textField_SellTotal.setColumns(10);
-		textField_SellTotal.setBounds(41, 129, 134, 21);
-		panel_Sell.add(textField_SellTotal);
-		
 		JButton button_SellRequest = new JButton("¸Åµµ");
-		button_SellRequest.addActionListener(new button_BuySell(false));
+		button_SellRequest.addActionListener(new Button_BuySell(false));
 		button_SellRequest.setForeground(Color.WHITE);
 		button_SellRequest.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 14));
 		button_SellRequest.setBackground(Color.BLUE);
-		button_SellRequest.setBounds(12, 160, 201, 31);
+		button_SellRequest.setBounds(12, 200, 241, 31);
 		panel_Sell.add(button_SellRequest);
 		
-		JLabel label_SellTotal = new JLabel("ÃÑ¾×");
-		label_SellTotal.setBounds(12, 132, 57, 15);
-		panel_Sell.add(label_SellTotal);
+		JPanel panel_SellTotal = new JPanel();
+		panel_SellTotal.setLayout(null);
+		panel_SellTotal.setBounds(12, 146, 241, 39);
+		panel_Sell.add(panel_SellTotal);
 		
-		label_SellTotalSymbol = new JLabel("KRW");
-		label_SellTotalSymbol.setBounds(183, 132, 62, 15);
-		panel_Sell.add(label_SellTotalSymbol);
+		label_SellTotal = new JLabel("0");
+		label_SellTotal.setHorizontalAlignment(SwingConstants.RIGHT);
+		label_SellTotal.setForeground(Color.BLUE);
+		label_SellTotal.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 16));
+		label_SellTotal.setBounds(69, 9, 130, 15);
+		panel_SellTotal.add(label_SellTotal);
+		
+		JLabel label_SellTotalText = new JLabel("\uC8FC\uBB38\uCD1D\uC561");
+		label_SellTotalText.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 12));
+		label_SellTotalText.setBounds(12, 11, 57, 15);
+		panel_SellTotal.add(label_SellTotalText);
+		
+		label_SellTotalSymbol = new JLabel("Symbol");
+		label_SellTotalSymbol.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
+		label_SellTotalSymbol.setBounds(200, 10, 62, 15);
+		panel_SellTotal.add(label_SellTotalSymbol);
+		
+		JLabel lable_SellBalanceText = new JLabel("\uC8FC\uBB38\uAC00\uB2A5");
+		lable_SellBalanceText.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
+		lable_SellBalanceText.setBounds(12, 20, 57, 15);
+		panel_Sell.add(lable_SellBalanceText);
+		
+		label_SellBalanceSymbol = new JLabel("Symbol");
+		label_SellBalanceSymbol.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
+		label_SellBalanceSymbol.setHorizontalAlignment(SwingConstants.LEFT);
+		label_SellBalanceSymbol.setBounds(220, 20, 57, 15);
+		panel_Sell.add(label_SellBalanceSymbol);
+		
+		label_SellBalance = new JLabel("0");
+		label_SellBalance.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 14));
+		label_SellBalance.setHorizontalAlignment(SwingConstants.RIGHT);
+		label_SellBalance.setBounds(70, 20, 146, 15);
+		panel_Sell.add(label_SellBalance);
+		
+		comboBox_SellQuantity = new JComboBox<String>();
+		comboBox_SellQuantity.addActionListener(new ComboListener_BuySell(false));
+		comboBox_SellQuantity.setModel(new DefaultComboBoxModel<String>(new String[] {"100%", "75%", "50%", "25%"}));
+		comboBox_SellQuantity.setBounds(156, 92, 60, 21);
+		panel_Sell.add(comboBox_SellQuantity);
 		
 		JTabbedPane tabbedPane_TradeHistory = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane_TradeHistory.setBounds(0, 0, 445, 230);
+		tabbedPane_TradeHistory.setBackground(Color.WHITE);
+		tabbedPane_TradeHistory.setBounds(0, 0, 564, 270);
 		panel_Bottom.add(tabbedPane_TradeHistory);
 		
 		JScrollPane scrollPane_TradeNotComplete = new JScrollPane();
@@ -488,13 +602,14 @@ public class GUI extends JFrame
 		
 		JPanel panel_Top = new JPanel();
 		panel_Top.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panel_Top.setBounds(0, 0, 675, 439);
+		panel_Top.setBounds(0, 0, 834, 490);
 		panel_Center.add(panel_Top);
 		panel_Top.setLayout(null);
 		
 		JPanel panel_Info = new JPanel();
+		panel_Info.setBackground(Color.WHITE);
 		panel_Info.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panel_Info.setBounds(0, 0, 675, 55);
+		panel_Info.setBounds(0, 0, 834, 55);
 		panel_Top.add(panel_Info);
 		panel_Info.setLayout(null);
 		
@@ -504,7 +619,7 @@ public class GUI extends JFrame
 		lblNewLabel.setBounds(560, 10, 86, 15);
 		panel_Info.add(lblNewLabel);
 		
-		label_InfoVolume = new JLabel("");
+		label_InfoVolume = new JLabel("0");
 		label_InfoVolume.setHorizontalAlignment(SwingConstants.LEFT);
 		label_InfoVolume.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 10));
 		label_InfoVolume.setBounds(560, 27, 111, 15);
@@ -522,14 +637,14 @@ public class GUI extends JFrame
 		label.setBounds(445, 26, 57, 15);
 		panel_Info.add(label);
 		
-		label_InfoHighPrice = new JLabel("");
+		label_InfoHighPrice = new JLabel("0");
 		label_InfoHighPrice.setForeground(Color.RED);
 		label_InfoHighPrice.setHorizontalAlignment(SwingConstants.RIGHT);
 		label_InfoHighPrice.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 12));
 		label_InfoHighPrice.setBounds(455, 9, 76, 15);
 		panel_Info.add(label_InfoHighPrice);
 		
-		label_InfoLowPrice = new JLabel("");
+		label_InfoLowPrice = new JLabel("0");
 		label_InfoLowPrice.setHorizontalAlignment(SwingConstants.RIGHT);
 		label_InfoLowPrice.setForeground(Color.BLUE);
 		label_InfoLowPrice.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 12));
@@ -542,48 +657,50 @@ public class GUI extends JFrame
 		label_3.setBounds(340, 10, 57, 15);
 		panel_Info.add(label_3);
 		
-		label_InfoChangeRate = new JLabel("");
+		label_InfoChangeRate = new JLabel("0%");
 		label_InfoChangeRate.setHorizontalAlignment(SwingConstants.RIGHT);
-		label_InfoChangeRate.setForeground(Color.RED);
+		label_InfoChangeRate.setForeground(Color.BLACK);
 		label_InfoChangeRate.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 12));
 		label_InfoChangeRate.setBounds(285, 26, 76, 15);
 		panel_Info.add(label_InfoChangeRate);
 		
-		label_InfoChangePrice = new JLabel("");
+		label_InfoChangePrice = new JLabel("0");
 		label_InfoChangePrice.setHorizontalAlignment(SwingConstants.RIGHT);
-		label_InfoChangePrice.setForeground(Color.RED);
+		label_InfoChangePrice.setForeground(Color.BLACK);
 		label_InfoChangePrice.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 12));
 		label_InfoChangePrice.setBounds(365, 26, 57, 15);
 		panel_Info.add(label_InfoChangePrice);
 		
 		JPanel panel_InfoLeft = new JPanel();
+		panel_InfoLeft.setBackground(Color.WHITE);
 		panel_InfoLeft.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
 		panel_InfoLeft.setBounds(0, 0, 310, 55);
 		panel_Info.add(panel_InfoLeft);
 		panel_InfoLeft.setLayout(null);
 		
-		label_InfoName = new JLabel("");
+		label_InfoName = new JLabel("Name");
 		label_InfoName.setBounds(15, 8, 275, 25);
 		panel_InfoLeft.add(label_InfoName);
 		label_InfoName.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 18));
 		label_InfoName.setHorizontalAlignment(SwingConstants.LEFT);
 		
-		label_InfoSymbol = new JLabel("");
+		label_InfoSymbol = new JLabel("Symbol");
 		label_InfoSymbol.setBounds(15, 30, 105, 17);
 		panel_InfoLeft.add(label_InfoSymbol);
 		label_InfoSymbol.setHorizontalAlignment(SwingConstants.LEFT);
 		label_InfoSymbol.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
 		
-		label_InfoTradePrice = new JLabel("");
+		label_InfoTradePrice = new JLabel("0");
 		label_InfoTradePrice.setBounds(105, 9, 185, 30);
 		panel_InfoLeft.add(label_InfoTradePrice);
-		label_InfoTradePrice.setForeground(Color.RED);
+		label_InfoTradePrice.setForeground(Color.BLACK);
 		label_InfoTradePrice.setHorizontalAlignment(SwingConstants.RIGHT);
 		label_InfoTradePrice.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 18));
 		
 		panel_Chart = new JPanel();
+		panel_Chart.setBackground(Color.WHITE);
 		panel_Chart.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panel_Chart.setBounds(0, 55, 675, 384);
+		panel_Chart.setBounds(0, 55, 834, 435);
         panel_Chart.setLayout(null);
 		panel_Top.add(panel_Chart);
 		
@@ -594,17 +711,47 @@ public class GUI extends JFrame
         chart.setAntiAlias(false);
         chart.getTitle().setVisible(false);
         ChartPanel chartPanel = new ChartPanel(chart);
-        chartPanel.setBounds(2, 2, 671, 380);
+        chartPanel.addChartMouseListener(new ChartMouseListener()
+		{
+			@Override
+			public void chartMouseMoved(ChartMouseEvent arg0)
+			{
+				label_ChartInfo.setText(arg0.getEntity().getToolTipText());
+			}
+			
+			@Override
+			public void chartMouseClicked(ChartMouseEvent arg0)
+			{
+				
+			}
+		});
+        chartPanel.setMouseZoomable(false);
+        chartPanel.setBounds(2, 24, 830, 409);
         chartPanel.setPreferredSize(new java.awt.Dimension(671, 380));
         panel_Chart.add(chartPanel);
+        
+        comboBox_ChartTermType = new JComboBox<String>();
+        comboBox_ChartTermType.addActionListener(new ComboListener_Chart());
+        comboBox_ChartTermType.setBounds(1, 1, 70, 23);
+        panel_Chart.add(comboBox_ChartTermType);
+        comboBox_ChartTermType.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
+        comboBox_ChartTermType.setModel(new DefaultComboBoxModel<String>(new String[] {"1\uBD84", "3\uBD84", "5\uBD84", "10\uBD84", "15\uBD84", "30\uBD84", "1\uC2DC\uAC04", "4\uC2DC\uAC04", "1\uC77C", "1\uC8FC", "1\uB2EC"}));
+        
+        label_ChartInfo = new JLabel("Information");
+        label_ChartInfo.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 14));
+        label_ChartInfo.setHorizontalAlignment(SwingConstants.RIGHT);
+        label_ChartInfo.setBounds(95, 1, 731, 23);
+        panel_Chart.add(label_ChartInfo);
 		
 		JTabbedPane tabbedPane_CoinList = new JTabbedPane(JTabbedPane.TOP);
-		tabbedPane_CoinList.addChangeListener(new tabListener(tabbedPane_CoinList));
+		tabbedPane_CoinList.setBackground(Color.WHITE);
+		tabbedPane_CoinList.addChangeListener(new TabListener(tabbedPane_CoinList));
 		tabbedPane_CoinList.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		tabbedPane_CoinList.setBounds(0, 21, 300, 669);
+		tabbedPane_CoinList.setBounds(0, 21, 300, 760);
 		contentPane.add(tabbedPane_CoinList);
 		
 		JPanel panel_KRW = new JPanel();
+		panel_KRW.setBackground(Color.WHITE);
 		tabbedPane_CoinList.addTab("KRW", null, panel_KRW, "¿øÈ­ ¸¶ÄÏ");
 		panel_KRW.setLayout(null);
 		
@@ -618,7 +765,7 @@ public class GUI extends JFrame
 		panel_KRW.add(button_SearchKRW);
 		
 		JScrollPane scrollPane_KRW = new JScrollPane();
-		scrollPane_KRW.setBounds(0, 27, 291, 609);
+		scrollPane_KRW.setBounds(0, 27, 291, 700);
 		scrollPane_KRW.getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
 		panel_KRW.add(scrollPane_KRW);
 		
@@ -654,7 +801,7 @@ public class GUI extends JFrame
 		table_KRW.setRowHeight(40);
 		table_KRW.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
 		table_KRW.getTableHeader().setReorderingAllowed(false);
-		table_KRW.addMouseListener(new table_Select(table_KRW));
+		table_KRW.addMouseListener(new Table_Select(table_KRW));
 		scrollPane_KRW.setViewportView(table_KRW);
 		
 		JPanel panel_BTC = new JPanel();
@@ -671,7 +818,7 @@ public class GUI extends JFrame
 		panel_BTC.add(button_SearchBTC);
 		
 		JScrollPane scrollPane_BTC = new JScrollPane();
-		scrollPane_BTC.setBounds(0, 27, 291, 609);
+		scrollPane_BTC.setBounds(0, 27, 291, 700);
 		panel_BTC.add(scrollPane_BTC);
 		
 		table_BTC = new JTable();
@@ -706,7 +853,7 @@ public class GUI extends JFrame
 		table_BTC.setRowHeight(40);
 		table_BTC.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
 		table_BTC.getTableHeader().setReorderingAllowed(false);
-		table_BTC.addMouseListener(new table_Select(table_BTC));
+		table_BTC.addMouseListener(new Table_Select(table_BTC));
 		scrollPane_BTC.setViewportView(table_BTC);
 		
 		JPanel panel_ETH = new JPanel();
@@ -723,7 +870,7 @@ public class GUI extends JFrame
 		panel_ETH.add(button_SearchETH);
 		
 		JScrollPane scrollPane_ETH = new JScrollPane();
-		scrollPane_ETH.setBounds(0, 27, 291, 609);
+		scrollPane_ETH.setBounds(0, 27, 291, 700);
 		panel_ETH.add(scrollPane_ETH);
 		
 		table_ETH = new JTable();
@@ -758,7 +905,7 @@ public class GUI extends JFrame
 		table_ETH.setRowHeight(40);
 		table_ETH.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
 		table_ETH.getTableHeader().setReorderingAllowed(false);
-		table_ETH.addMouseListener(new table_Select(table_ETH));
+		table_ETH.addMouseListener(new Table_Select(table_ETH));
 		scrollPane_ETH.setViewportView(table_ETH);
 		
 		JPanel panel_MyCoin = new JPanel();
@@ -775,7 +922,7 @@ public class GUI extends JFrame
 		panel_MyCoin.add(button_searchMyCoin);
 		
 		JScrollPane scrollPane_MyCoin = new JScrollPane();
-		scrollPane_MyCoin.setBounds(0, 27, 291, 609);
+		scrollPane_MyCoin.setBounds(0, 27, 291, 700);
 		scrollPane_MyCoin.getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
 		panel_MyCoin.add(scrollPane_MyCoin);
 		
@@ -809,7 +956,7 @@ public class GUI extends JFrame
 		scrollPane_MyCoin.setViewportView(table_MyCoin);
 		
 		JMenuBar menuBar = new JMenuBar();
-		menuBar.setBounds(0, 0, 1275, 21);
+		menuBar.setBounds(0, 0, 1434, 21);
 		contentPane.add(menuBar);
 		
 		JMenu mnMenu = new JMenu("Menu1");
@@ -831,10 +978,11 @@ public class GUI extends JFrame
 	{
 		setCurrentMarket(Market.KRW);
 		setCurrentCoinSymbol(CoinSymbol.BTC);
+		setCurrentTermType(TermType.minutes);
+		setCurrentTerm(1);
 
 		clearBuySell();
 		updateCoinTable(Market.KRW);
-		table_KRW.setRowSelectionInterval(4, 4);
 		
 		updateInfo(getCurrentMarket(), getCurrentCoinSymbol());
 	}
@@ -1024,53 +1172,134 @@ public class GUI extends JFrame
 		return true;
 	}
 	
-	public void updateBuySell()
+	public void updateBuySell(boolean byRatio)
 	{
-		if (getBuyPrice() == 0 || getBuyQuantity() ==0 || getSellQuantity() == 0)
-			setBuyTotal(0);
+		Account account = upbit.getAccount();
+		Market market = getCurrentMarket();
+		CoinSymbol coinSymbol = getCurrentCoinSymbol();
+		double balance, price, quantity, total, ratio;
 		
-		if (getSellPrice() == 0 || getSellQuantity() == 0)
-			setSellTotal(0);
-
-		setBuyTotal(getBuyPrice() * getBuyQuantity());
-		setSellTotal(getSellPrice() * getSellQuantity());
-
-		if (getCurrentMarket() == Market.KRW)
+		
+		// Buy
+		switch (market)
 		{
-			setBuyTotal(Math.round(getBuyTotal()));
-			setSellTotal(Math.round(getSellTotal()));
+		case KRW:
+			balance = account.getKRW();
+			break;
+			
+		case BTC:
+			balance = account.getBalance(CoinSymbol.BTC);
+			break;
+			
+		case ETH:
+			balance = account.getBalance(CoinSymbol.ETH);
+			break;
+		
+		default:
+			balance = 0;
 		}
 		
-		decimalFormat = new DecimalFormat("#,###.########");
+		price = getBuyPrice();
 		
+		if (byRatio)
+		{
+			ratio = getBuySellRatio();
+			
+			if (balance == 0 || price == 0)
+			{
+				quantity = 0;
+				total = 0;
+			}
+			else
+			{
+				quantity = balance * ratio / price;
+				total = market == Market.KRW ? Math.round(quantity * price) : Math.round(quantity * price * 100000000) / 100000000;
+			}
+		}
+		else
+		{
+			quantity = getBuyQuantity();
+			
+			total = market == Market.KRW ? Math.round(quantity * price) : Math.round(quantity * price * 100000000) / 100000000;
+		}
+		
+		setBuyBalance(balance);
+		setBuyQuantity(quantity);
+		setBuyTotal(total);
+				
+		
+		// Sell
+		balance = account.getBalance(coinSymbol);
+		price = getSellPrice();
+		
+		if (byRatio)
+		{
+			ratio = getBuySellRatio();
+			
+			if (balance == 0 || price == 0)
+			{
+				quantity = 0;
+				total = 0;
+			}
+			else
+			{
+				quantity = balance * ratio;
+				total = market == Market.KRW ? Math.round(quantity * price) : Math.round(quantity * price * 1000000000/ 100000000);
+			}
+		}
+		else
+		{
+			quantity = getSellQuantity();
+			
+			total = market == Market.KRW ? Math.round(quantity * price) : Math.round(quantity * price * 1000000000/ 100000000);
+		}
+		
+		setSellBalance(balance);
+		setSellQuantity(quantity);
+		setSellTotal(total);
+		
+		
+		// GUI ¾÷µ¥ÀÌÆ®
+		if (market == Market.KRW)
+			decimalFormat = new DecimalFormat("#,###.###");
+		else
+			decimalFormat = new DecimalFormat("#,###.########");
+		
+		label_BuyBalance.setText(decimalFormat.format(getBuyBalance()));
 		spinner_BuyPrice.setValue(getBuyPrice());
-		spinner_SellPrice.setValue(getSellPrice());
 		textField_BuyQuantity.setText(decimalFormat.format(getBuyQuantity()));
+		label_BuyTotal.setText(decimalFormat.format(getBuyTotal()));
+
+		label_SellBalance.setText(decimalFormat.format(getSellBalance()));
+		spinner_SellPrice.setValue(getSellPrice());
 		textField_SellQuantity.setText(decimalFormat.format(getSellQuantity()));
-		textField_BuyTotal.setText(decimalFormat.format(getBuyTotal()));
-		textField_SellTotal.setText(decimalFormat.format(getSellTotal()));
-	}
-	
-	public void updateBuySellSymbol()
-	{
-		label_BuyPriceSymbol.setText(currentMarket.toString());
-		label_BuyQuantitySymbol.setText(currentCoinSymbol.toString());
-		label_BuyTotalSymbol.setText(currentMarket.toString());
-		label_SellPriceSymbol.setText(currentMarket.toString());
-		label_SellQuantitySymbol.setText(currentCoinSymbol.toString());
-		label_SellTotalSymbol.setText(currentMarket.toString());
+		label_SellTotal.setText(decimalFormat.format(getSellTotal()));
+		
+
+		label_BuyBalanceSymbol.setText(market.toString());
+		label_BuyPriceSymbol.setText(market.toString());
+		label_BuyQuantitySymbol.setText(coinSymbol.toString());
+		label_BuyTotalSymbol.setText(market.toString());
+		
+		label_SellBalanceSymbol.setText(coinSymbol.toString());
+		label_SellPriceSymbol.setText(market.toString());
+		label_SellQuantitySymbol.setText(coinSymbol.toString());
+		label_SellTotalSymbol.setText(market.toString());
 	}
 	
 	public void clearBuySell()
 	{
+		setBuyBalance(0);
 		setBuyPrice(0);
 		setBuyQuantity(0);
 		setBuyTotal(0);
+		setSellBalance(0);
 		setSellPrice(0);
 		setSellQuantity(0);
 		setSellTotal(0);
+		setBuySellRatio(1);
 
-		updateBuySell();
+		updateBuySell(true);
 	}
 	
 	public void updateInfo(Market market, CoinSymbol coinSymbol)
@@ -1251,141 +1480,169 @@ public class GUI extends JFrame
 	
 	public boolean updateChart(Market market, CoinSymbol coinSymbol, TermType termType, int term, int startIndex, int endIndex)
 	{
+		CryptoCurrency cryptoCurrency;
+		DefaultHighLowDataset dataset;
+		
 		try
 		{
-			CryptoCurrency cryptoCurrency;
-			DefaultHighLowDataset dataset;
-			
-			try
-			{
-				cryptoCurrency = upbit.getCryptoCurrency(upbit.createName(market, coinSymbol, termType, term));
-			}
-			catch (Exception e)
-			{
-				try
-				{
-					cryptoCurrency = upbit.requestData(market, coinSymbol, termType, term, endIndex - startIndex + 1);
-					upbit.addCryptoCurrency(cryptoCurrency);
-				}
-				catch (Exception e1)
-				{
-					return false;
-				}
-			}
-			
-			dataset = createCandleStickDataset(cryptoCurrency, startIndex, endIndex);
-			chart.getXYPlot().setDataset(dataset); 
-			
-			double[] range = cryptoCurrency.getMinMaxPrice(startIndex, endIndex);
-			chart.getXYPlot().getRangeAxis().setRange(range[0], range[1]);
-			
-			return true;
+			cryptoCurrency = upbit.getCryptoCurrency(upbit.createName(market, coinSymbol, termType, term));
 		}
 		catch (Exception e)
 		{
-			e.printStackTrace();
-			return false;
+			try
+			{
+				cryptoCurrency = upbit.requestData(market, coinSymbol, termType, term, endIndex - startIndex + 1);
+				upbit.addCryptoCurrency(cryptoCurrency);
+			}
+			catch (Exception e1)
+			{
+				return false;
+			}
 		}
+		
+		dataset = createCandleStickDataset(cryptoCurrency, startIndex, endIndex);
+		chart.getXYPlot().setDataset(dataset); 
+		
+		double[] range = cryptoCurrency.getMinMaxPrice(startIndex, endIndex);
+		chart.getXYPlot().getRangeAxis().setRange(range[0], range[1]);
+
+		((NumberAxis) chart.getXYPlot().getRangeAxis()).setTickUnit(createTickUnit((range)[1] - range[0]));
+		
+		return true;
 	}
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
-
-	class button_BuySellRatio implements ActionListener
+	public NumberTickUnit createTickUnit(double range)
 	{
-		private boolean isBuy;
-		private double ratio;
-		
-		public button_BuySellRatio(boolean isBuy, double ratio)
+		double key, count;
+		key = 0.00000001;
+		count = range / key;
+				
+		while(count > 6)
 		{
-			setBuy(isBuy);
-			setRatio(ratio);
-		}
-		
-		@Override
-		public void actionPerformed(ActionEvent e)
-		{
-			double balance = 0, price, quantity;
+			if (count <= 6)
+				break;
 			
-			if (isBuy == true)
-			{
-				switch (getCurrentMarket())
-				{
-				case KRW:
-					balance = upbit.getAccount().getKRW();
-					break;
-					
-				case BTC:
-					balance = upbit.getAccount().getBalance(CoinSymbol.BTC);
-					break;
-					
-				case ETH:
-					balance = upbit.getAccount().getBalance(CoinSymbol.ETH);
-				}
-				
-				if (balance == 0 || getBuyPrice() == 0)
-					setBuyQuantity(0);
-				else
-				{
-					quantity = (balance * getRatio()) / getBuyPrice();
-					setBuyQuantity(quantity);
-				}
-				
-				updateBuySell();
-			}
+			key *= 2.5;
+			count = range / key;
+			
+			if (count <= 6)
+				break;
+			
+			key *= 2;
+			count = range / key;
+			
+			if (count <= 6)
+				break;
+			
+			key *= 2;
+			count = range / key;
+		}
+		
+		return new NumberTickUnit(key);
+	}
+	
+	public double spinnerValueControl(double input, boolean increase, Market market)
+	{
+		if (increase)
+		{
+			if (input < 10)
+				return input += 0.01;
+			else if (input < 100)
+				return input += 0.1;
+			else if (input < 1000)
+				return input += 1;
+			else if (input < 10000)
+				return input += 5;
+			else if (input < 100000)
+				return input += 10;
+			else if (input < 500000)
+				return input += 50;
+			else if (input < 1000000)
+				return input += 100;
+			else if (input < 2000000)
+				return input += 500;
 			else
-			{
-				CoinSymbol coinSymbol = coinTableElements.get(selectedRow).getCoinSymbol();
-				
-				balance = upbit.getAccount().getBalance(coinSymbol);
-				
-				price = Double.parseDouble(spinner_BuyPrice.getValue().toString());
-				quantity = balance * getRatio();
-				
-				setSellQuantity(quantity);
-				updateBuySell();
-			}
+				return input += 1000;
 		}
-
-		public boolean isBuy()
+		else
 		{
-			return isBuy;
-		}
-
-		public void setBuy(boolean isBuy)
-		{
-			this.isBuy = isBuy;
-		}
-
-		public double getRatio()
-		{
-			return ratio;
-		}
-
-		public void setRatio(double ratio)
-		{
-			this.ratio = ratio;
+			if (input <= 10)
+				return input -= 0.01;
+			else if (input <= 100)
+				return input -= 0.1;
+			else if (input <= 1000)
+				return input -= 1;
+			else if (input <= 10000)
+				return input -= 5;
+			else if (input <= 100000)
+				return input -= 10;
+			else if (input <= 500000)
+				return input -= 50;
+			else if (input <= 1000000)
+				return input -= 100;
+			else if (input <= 2000000)
+				return input -= 500;
+			else
+				return input -= 1000;
 		}
 	}
 	
-	class button_BuySell implements ActionListener
+	public double spinnerFixValue(double input)
 	{
-		private boolean isBuy;
+		double kappa;
 		
-		public button_BuySell(boolean isBuy)
+		if (input < 10)
+			kappa = Math.floor(input * 100) / 100;
+		else if (input < 100)
+			kappa = Math.floor(input * 10) / 10;
+		else if (input < 1000)
+			kappa = Math.floor(input);
+		else if (input < 10000)
+			kappa = Math.floor(input / 10) * 10;
+		else if (input < 100000)
+			kappa = Math.floor(input / 100) * 100;
+		else if (input < 500000)
+			kappa = Math.floor(input / 100) * 100;
+		else if (input < 2000000)
+			kappa = Math.floor(input / 1000) * 1000;
+		else
+			kappa = Math.floor(input / 10000) * 10000;
+		
+		while (input > kappa)
 		{
-			this.setBuy(isBuy);
+			kappa = spinnerValueControl(kappa, true, getCurrentMarket());
+			
+			if (input < kappa)
+				break;
+		}
+		
+		return spinnerValueControl(kappa, false, getCurrentMarket());
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	class Button_BuySell implements ActionListener
+	{
+		private boolean buy;
+		
+		public Button_BuySell(boolean buy)
+		{
+			this.setBuy(buy);
 		}
 		
 		@Override
@@ -1393,36 +1650,47 @@ public class GUI extends JFrame
 		{
 			double tradePrice, quantity; 
 			
-			if (isBuy)
+			if (buy)
 			{
-				tradePrice = getBuyPrice();
-				quantity = getBuyQuantity();
+				if (getBuyBalance() < getBuyTotal())
+				{
+					// ÀÜ°í ºÎÁ·
+					return;
+				}
+				
 			}
 			else
 			{
+				if (getSellBalance() < getSellQuantity())
+				{
+					// ÀÜ°í ºÎÁ·
+					return;
+				}
+				
 				tradePrice = getSellPrice();
 				quantity = getSellQuantity();
 			}
-			
-			upbit.createOrder(currentMarket, currentCoinSymbol, tradePrice, quantity, isBuy);
+
+			upbit.createOrder(getCurrentMarket(), getCurrentCoinSymbol(), getBuyPrice(), getBuyQuantity(), buy);
+			// updateTradeHistory
 		}
 		
-		public boolean isBuy()
+		public boolean getBuy()
 		{
-			return isBuy;
+			return buy;
 		}
 
-		public void setBuy(boolean isBuy)
+		public void setBuy(boolean buy)
 		{
-			this.isBuy = isBuy;
+			this.buy = buy;
 		}
 	}
 	
-	class table_Select implements MouseListener
+	class Table_Select implements MouseListener
 	{
 		private JTable jTable;
 		
-		public table_Select(JTable jTable)
+		public Table_Select(JTable jTable)
 		{
 			this.jTable = jTable;
 		}
@@ -1431,21 +1699,22 @@ public class GUI extends JFrame
 		public void mouseClicked(java.awt.event.MouseEvent e)
 		{
 			selectedRow = jTable.getSelectedRow();
-			
-			double price;
-			price = coinTableElements.get(selectedRow).getTradePrice();
-			
 			CoinTableElement element = coinTableElements.get(selectedRow);
+			
+			double tradePrice = element.getTradePrice();
+
+			setCurrentMarket(element.getMarket());
 			setCurrentCoinSymbol(element.getCoinSymbol());
 			
-			setBuyPrice(price);
-			setSellPrice(price);
+			setBuyPrice(tradePrice);
+			setSellPrice(tradePrice);
 
-			updateBuySell();
-			updateBuySellSymbol();
+			updateBuySell(true);
 
-			getExecutorService().submit(()-> updateInfo(element.getMarket(), element.getCoinSymbol()));
-			updateOrderTable(currentMarket, currentCoinSymbol);
+			updateInfo(element.getMarket(), element.getCoinSymbol());
+			updateChart(getCurrentMarket(), getCurrentCoinSymbol(), getCurrentTermType(), getCurrentTerm(), 0, 99);
+			updateOrderTable(getCurrentMarket(), getCurrentCoinSymbol());
+			
 		}
 
 		@Override
@@ -1477,11 +1746,11 @@ public class GUI extends JFrame
 		}
 	}
 
-	class tabListener implements ChangeListener
+	class TabListener implements ChangeListener
 	{
 		private JTabbedPane tab;
 		
-		public tabListener(JTabbedPane tab)
+		public TabListener(JTabbedPane tab)
 		{
 			this.tab = tab;
 		}
@@ -1526,6 +1795,113 @@ public class GUI extends JFrame
 		}
 	}
 	
+	class ComboListener_BuySell implements ActionListener
+	{
+		private boolean buy;
+		
+		/**
+		 * @param buy TRUE: ¸Å¼ö, FALSE: ¸Åµµ
+		 * 
+		 */
+		public ComboListener_BuySell(boolean buy)
+		{
+			this.buy = buy;
+		}
+		
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			JComboBox<String> comboBox;
+			
+			if (buy)
+				comboBox = comboBox_BuyQuantity;
+			else
+				comboBox = comboBox_SellQuantity;
+			
+			// 0: 100%, 1: 75%, 2: 50%, 3: 25%
+			switch (comboBox.getSelectedIndex())
+			{
+			case 0:
+				setBuySellRatio(1);
+				break;
+				
+			case 1:
+				setBuySellRatio(0.75);
+				break;
+				
+			case 2:
+				setBuySellRatio(0.5);
+				break;
+				
+			case 3:
+				setBuySellRatio(0.25);
+				break;
+			}
+			
+			updateBuySell(true);
+		}
+	}
+	
+	class ComboListener_Chart implements ActionListener
+	{
+		@SuppressWarnings("unchecked")
+		@Override
+		public void actionPerformed(ActionEvent e)
+		{
+			JComboBox<String> comboBox = (JComboBox<String>) e.getSource();
+			
+			switch (comboBox.getSelectedIndex())
+			{
+			case 0:
+				setCurrentTermType(TermType.minutes);
+				setCurrentTerm(1);
+				break;
+			case 1:
+				setCurrentTermType(TermType.minutes);
+				setCurrentTerm(3);
+				break;
+			case 2:
+				setCurrentTermType(TermType.minutes);
+				setCurrentTerm(5);
+				break;
+			case 3:
+				setCurrentTermType(TermType.minutes);
+				setCurrentTerm(10);
+				break;
+			case 4:
+				setCurrentTermType(TermType.minutes);
+				setCurrentTerm(15);
+				break;
+			case 5:
+				setCurrentTermType(TermType.minutes);
+				setCurrentTerm(30);
+				break;
+			case 6:
+				setCurrentTermType(TermType.minutes);
+				setCurrentTerm(60);
+				break;
+			case 7:
+				setCurrentTermType(TermType.minutes);
+				setCurrentTerm(240);
+				break;
+			case 8:
+				setCurrentTermType(TermType.days);
+				setCurrentTerm(1);
+				break;
+			case 9:
+				setCurrentTermType(TermType.weeks);
+				setCurrentTerm(1);
+				break;
+			case 10:
+				setCurrentTermType(TermType.months);
+				setCurrentTerm(1);
+				break;
+			}
+			
+			updateChart(getCurrentMarket(), getCurrentCoinSymbol(), getCurrentTermType(), getCurrentTerm(), 0, 99);
+		}
+	}
+	
 
 	// Getter, Setter
 	public Upbit getUpbit()
@@ -1533,7 +1909,6 @@ public class GUI extends JFrame
 		return upbit;
 	}
 	
-
 	public void setUpbit(Upbit upbit)
 	{
 		this.upbit = upbit;
@@ -1544,7 +1919,6 @@ public class GUI extends JFrame
 		return buyPrice;
 	}
 	
-
 	public void setBuyPrice(double buyPrice)
 	{
 		if (buyPrice < 0)
@@ -1617,6 +1991,32 @@ public class GUI extends JFrame
 		
 		this.sellTotal = sellTotal;
 	}
+
+	public double getBuyBalance()
+	{
+		return buyBalance;
+	}
+
+	public void setBuyBalance(double buyBalance)
+	{
+		if (buyBalance < 0)
+			buyBalance = 0;
+		
+		this.buyBalance = buyBalance;
+	}
+
+	public double getSellBalance()
+	{
+		return sellBalance;
+	}
+
+	public void setSellBalance(double sellBalance)
+	{
+		if (sellBalance < 0)
+			sellBalance = 0;
+		
+		this.sellBalance = sellBalance;
+	}
 	
 	public double getBuySellRatio()
 	{
@@ -1676,5 +2076,25 @@ public class GUI extends JFrame
 	public void setPanel_Chart(JPanel panel_Chart)
 	{
 		this.panel_Chart = panel_Chart;
+	}
+
+	public TermType getCurrentTermType()
+	{
+		return currentTermType;
+	}
+
+	public void setCurrentTermType(TermType currentTermType)
+	{
+		this.currentTermType = currentTermType;
+	}
+
+	public int getCurrentTerm()
+	{
+		return currentTerm;
+	}
+
+	public void setCurrentTerm(int currentTerm)
+	{
+		this.currentTerm = currentTerm;
 	}
 }

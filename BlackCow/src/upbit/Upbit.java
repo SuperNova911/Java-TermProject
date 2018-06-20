@@ -84,21 +84,22 @@ public class Upbit
 				updateOrderBook(gui.getCurrentMarket(), gui.getCurrentCoinSymbol());
 		}, 0, updateDelay, TimeUnit.SECONDS);
 
-		executor.scheduleAtFixedRate(
-				() -> gui.updateChart(gui.getCurrentMarket(), gui.getCurrentCoinSymbol(), TermType.minutes, 1, 0, 99),
-				3, updateDelay, TimeUnit.SECONDS);
+		executor.scheduleAtFixedRate(() ->
+		{
+			updateData(gui.getCurrentMarket(), gui.getCurrentTermType(), gui.getCurrentTerm(), 100);
+			gui.updateChart(gui.getCurrentMarket(), gui.getCurrentCoinSymbol(), gui.getCurrentTermType(), gui.getCurrentTerm(), 0, 99);
+		}, 3, updateDelay, TimeUnit.SECONDS);
 	}
 	
 	public void loadCryptoCurrency()
 	{
 		updateData(Market.KRW, TermType.minutes, 1, 100);
 		updateData(Market.KRW, TermType.minutes, 60, 24);
+		updateData(Market.KRW, TermType.days, 1, 100);
 	}
 	
 	public void updateData(Market market, TermType termType, int term, int dataAmount)
 	{
-		String url;
-		LinkedList<JSONObject> list;
 		ArrayList<CoinSymbol> listCoinSymbol = new ArrayList<>();
 		CryptoCurrency cryptoCurrency;
 		
