@@ -137,7 +137,7 @@ public class DynamicCrawler
 		try
 		{
 			driver.get(url);
-			System.out.println("Move to: " + url);
+//			System.out.println("Move to: " + url);
 			return true;
 		}
 		catch (Exception e)
@@ -151,9 +151,9 @@ public class DynamicCrawler
 	{
 		try
 		{
-			System.out.println("Wait for load elements");
+//			System.out.println("Wait for load elements");
 			new WebDriverWait(driver, sec).until(ExpectedConditions.visibilityOfElementLocated(locator));
-			System.out.println("Load complete");
+//			System.out.println("Load complete");
 			return true;	
 		}
 		catch (Exception e)
@@ -168,7 +168,7 @@ public class DynamicCrawler
 		try
 		{
 			actions.moveToElement(element).perform();
-			System.out.println("Scroll to element");
+//			System.out.println("Scroll to element");
 			return true;
 		}
 		catch (Exception e)
