@@ -180,51 +180,51 @@ public class TestManager
 //		gui.setVisible(true);
 //	
 //		upbit.getAccount().addBalance(CoinSymbol.BTC, 15.123123, 1000000);
-
-
-		DynamicCrawler crawler = new DynamicCrawler();
-		crawler.getOrderBook(Market.KRW, CoinSymbol.BTC);
-//		crawler.moveTo("https://www.playxp.com/sc2/");
-//		try
+//
+//
+//		DynamicCrawler crawler = new DynamicCrawler();
+//		crawler.getOrderBook(Market.KRW, CoinSymbol.BTC);
+////		crawler.moveTo("https://www.playxp.com/sc2/");
+////		try
+////		{
+//////			Thread.sleep(2000);
+////		}
+////		catch (InterruptedException e)
+////		{
+////			// TODO 자동 생성된 catch 블록
+////			e.printStackTrace();
+////		}
+//		
+//		String pa = "#root > div > div > div:nth-child(4) > div > section.ty01 > div > div.leftB > article > span.askpriceB > div > div > div:nth-child(1) > table > tbody";
+//		String pa2 = "#root > div > div > div:nth-child(4) > div > section.ty01 > div > div.leftB > article > span.askpriceB > div > div > div:nth-child(1) > table > tbody > tr:nth-child(4)";
+//		String s = 	crawler.getDriver().findElement(By.cssSelector(pa)).getText();
+//
+//		System.out.println(s);
+//
+//		System.out.println("-----------------");
+//		
+//		s = s.replaceAll("-\n",  "").replaceAll(",", "").replaceAll("%", "");
+//		String[] ary = s.split("\n");
+//		
+//		for (String str : ary)
 //		{
-////			Thread.sleep(2000);
+////			System.out.println("--");
+//			System.out.println(str);
 //		}
-//		catch (InterruptedException e)
+//
+//		System.out.println("-----------------");
+//		ArrayList<String> orderList = new ArrayList<>();
+//		
+//		for (int index = 0; index < ary.length; index++)
 //		{
-//			// TODO 자동 생성된 catch 블록
-//			e.printStackTrace();
+//			if ((index >= 3 && index <= 21) || (index >= 49 && index <= 70))
+//				continue;
+//			
+//			orderList.add(ary[index]);
 //		}
-		
-		String pa = "#root > div > div > div:nth-child(4) > div > section.ty01 > div > div.leftB > article > span.askpriceB > div > div > div:nth-child(1) > table > tbody";
-		String pa2 = "#root > div > div > div:nth-child(4) > div > section.ty01 > div > div.leftB > article > span.askpriceB > div > div > div:nth-child(1) > table > tbody > tr:nth-child(4)";
-		String s = 	crawler.getDriver().findElement(By.cssSelector(pa)).getText();
-
-		System.out.println(s);
-
-		System.out.println("-----------------");
-		
-		s = s.replaceAll("-\n",  "").replaceAll(",", "").replaceAll("%", "");
-		String[] ary = s.split("\n");
-		
-		for (String str : ary)
-		{
-//			System.out.println("--");
-			System.out.println(str);
-		}
-
-		System.out.println("-----------------");
-		ArrayList<String> orderList = new ArrayList<>();
-		
-		for (int index = 0; index < ary.length; index++)
-		{
-			if ((index >= 3 && index <= 21) || (index >= 49 && index <= 70))
-				continue;
-			
-			orderList.add(ary[index]);
-		}
-		
-		for (String str : orderList)
-			System.out.println(str);
+//		
+//		for (String str : orderList)
+//			System.out.println(str);
 	}
 	
 	public static void kappa()
