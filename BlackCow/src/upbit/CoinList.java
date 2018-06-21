@@ -15,7 +15,7 @@ public class CoinList
 	public enum CoinSymbol
 	{
 		BTC, ADA, EOS, TRX, STORM, IGNIS, XRP, GTO, XLM,
-		SC, ETH, SNT, QTUM, BCC, NEO, SBD, ETC, ARDR, GRS,
+		SC, ETH, SNT, QTUM, BCH, NEO, SBD, ETC, ARDR, GRS,
 		XMR, STEEM, GNT, ICX, LSK, XEM, POWR, MER, EMC2,
 		STRAT, OMG, LTC, TIX, BTG, PIVX, MCO, WAVES, STORJ,
 		DASH, KMD, VTC, MTL, REP, ARK, ZEC, XVG, PART, SRN, DGB,
@@ -53,7 +53,7 @@ public class CoinList
 	}
 	
 	public static ArrayList<CoinSymbol> listKRW = new ArrayList<CoinSymbol>(Arrays.asList(
-			CoinSymbol.ADA, CoinSymbol.ARDR, CoinSymbol.ARK, CoinSymbol.BCC, CoinSymbol.BTC, CoinSymbol.BTG,
+			CoinSymbol.ADA, CoinSymbol.ARDR, CoinSymbol.ARK, CoinSymbol.BCH, CoinSymbol.BTC, CoinSymbol.BTG,
 			CoinSymbol.DASH, CoinSymbol.EMC2, CoinSymbol.EOS, CoinSymbol.ETC, CoinSymbol.ETH, CoinSymbol.GNT, 
 			CoinSymbol.GRS, CoinSymbol.GTO, CoinSymbol.ICX, CoinSymbol.IGNIS, CoinSymbol.KMD, CoinSymbol.LSK, 
 			CoinSymbol.LTC, CoinSymbol.MCO, CoinSymbol.MER, CoinSymbol.MTL, CoinSymbol.NEO, CoinSymbol.OMG, 

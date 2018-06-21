@@ -21,7 +21,6 @@ import com.google.gson.JsonObject;
 
 import gui.GUI;
 import gui.OrderTableElement;
-import javafx.scene.shape.Cylinder;
 import upbit.CoinList.CoinSymbol;
 import upbit.CoinList.Market;
 import upbit.JsonManager.JsonKey;
@@ -89,7 +88,7 @@ public class Upbit
 
 		executor.scheduleAtFixedRate(() ->
 		{
-			updateData(gui.getCurrentMarket(), gui.getCurrentTermType(), gui.getCurrentTerm(), 100);
+			updateData(gui.getCurrentMarket(), gui.getCurrentTermType(), gui.getCurrentTerm(), 3);
 			gui.updateChart(gui.getCurrentMarket(), gui.getCurrentCoinSymbol(), gui.getCurrentTermType(), gui.getCurrentTerm(), 0, 99);
 		}, 3, updateDelay, TimeUnit.SECONDS);
 	}
@@ -97,8 +96,16 @@ public class Upbit
 	public void loadCryptoCurrency()
 	{
 		updateData(Market.KRW, TermType.minutes, 1, 100);
-		updateData(Market.KRW, TermType.minutes, 60, 24);
+		updateData(Market.KRW, TermType.minutes, 3, 100);
+		updateData(Market.KRW, TermType.minutes, 5, 100);
+		updateData(Market.KRW, TermType.minutes, 10, 100);
+		updateData(Market.KRW, TermType.minutes, 15, 100);
+		updateData(Market.KRW, TermType.minutes, 30, 100);
+		updateData(Market.KRW, TermType.minutes, 60, 100);
+		updateData(Market.KRW, TermType.minutes, 240, 100);
 		updateData(Market.KRW, TermType.days, 1, 100);
+		updateData(Market.KRW, TermType.weeks, 1, 100);
+		updateData(Market.KRW, TermType.months, 1, 100);
 	}
 	
 	public void updateData(Market market, TermType termType, int term, int dataAmount)
