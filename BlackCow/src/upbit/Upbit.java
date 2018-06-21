@@ -84,6 +84,7 @@ public class Upbit
 				updateOrderBook(gui.getCurrentMarket(), gui.getCurrentCoinSymbol());
 			confirmOrder();
 			gui.updateTradeHistoryTable();
+			gui.updateMyCoinTable();
 		}, 0, updateDelay, TimeUnit.SECONDS);
 
 		executor.scheduleAtFixedRate(() ->

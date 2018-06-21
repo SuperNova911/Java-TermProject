@@ -38,6 +38,7 @@ import upbit.Order;
 import upbit.OrderBookElement;
 import upbit.Request.TermType;
 import upbit.Upbit;
+import upbit.Wallet;
 
 import javax.swing.JScrollPane;
 import javax.swing.JLayeredPane;
@@ -112,6 +113,7 @@ public class GUI extends JFrame
 	private ExecutorService executorService;
 	
 	private ArrayList<CoinTableElement> coinTableElements;
+	private ArrayList<MyCoinTableElement> myCoinTableElements; 
 	private ArrayList<OrderTableElement> orderTableElements;
 	private ArrayList<TradeHistoryTableElement> tradeHistoryTableElements;
 	private ArrayList<TradeHistoryTableElement> tradeHistoryTableElements_Complete;
@@ -1004,6 +1006,10 @@ public class GUI extends JFrame
 		table_MyCoin.getColumnModel().getColumn(2).setResizable(false);
 		table_MyCoin.getColumnModel().getColumn(2).setPreferredWidth(100);
 		table_MyCoin.getColumnModel().getColumn(3).setResizable(false);
+		table_MyCoin.getColumnModel().getColumn(0).setCellRenderer(new CustomCellRenderer_MyCoinTable());
+		table_MyCoin.getColumnModel().getColumn(1).setCellRenderer(new CustomCellRenderer_MyCoinTable());
+		table_MyCoin.getColumnModel().getColumn(2).setCellRenderer(new CustomCellRenderer_MyCoinTable());
+		table_MyCoin.getColumnModel().getColumn(3).setCellRenderer(new CustomCellRenderer_MyCoinTable());
 		table_MyCoin.setRowHeight(40);
 		table_KRW.getTableHeader().setReorderingAllowed(false);
 		scrollPane_MyCoin.setViewportView(table_MyCoin);
@@ -1023,6 +1029,7 @@ public class GUI extends JFrame
 
 
 		coinTableElements = new ArrayList<CoinTableElement>();
+		myCoinTableElements = new ArrayList<MyCoinTableElement>();
 		orderTableElements = new ArrayList<OrderTableElement>();
 		tradeHistoryTableElements = new ArrayList<TradeHistoryTableElement>();
 		tradeHistoryTableElements_Complete = new ArrayList<TradeHistoryTableElement>();
@@ -1705,7 +1712,33 @@ public class GUI extends JFrame
 		}
 	}
 	
-	
+	public void updateMyCoinTable()
+	{
+		myCoinTableElements = new ArrayList<MyCoinTableElement>();
+		
+		for (Wallet wallet : upbit.getAccount().getWalletList())
+		{
+			double price = 0;
+			try
+			{
+				price = Double.parseDouble(upbit.getCryptoCurrency(upbit.createName(Market.KRW, wallet.getCoinSymbol(), TermType.minutes, 1)).getData(JsonKey.tradePrice));
+			} 
+			catch (Exception e)
+			{
+				
+			};
+			myCoinTableElements.add(new MyCoinTableElement(wallet.getCoinSymbol(), CoinList.getCoinNameKR(wallet.getCoinSymbol()).toString(), price * wallet.getBalance(), wallet.getAveragePrice(), 0));	
+		}
+		
+		DefaultTableModel model = (DefaultTableModel) table_MyCoin.getModel();
+		
+		model.setNumRows(0);
+		
+		for (MyCoinTableElement element : myCoinTableElements)
+		{
+			model.addRow(element.getData());
+		}
+	}
 	
 	
 	
