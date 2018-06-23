@@ -1,10 +1,9 @@
 package gui;
 
 import java.text.DecimalFormat;
-import java.util.Date;
 
-import upbit.Order;
 import upbit.CoinList.Market;
+import upbit.Order;
 
 public class TradeHistoryTableElement
 {

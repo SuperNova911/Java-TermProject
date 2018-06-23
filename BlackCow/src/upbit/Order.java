@@ -7,6 +7,7 @@ import java.util.UUID;
 import upbit.CoinList.CoinSymbol;
 import upbit.CoinList.Market;
 
+@SuppressWarnings("serial")
 public class Order implements Serializable
 {
 	private Market market;

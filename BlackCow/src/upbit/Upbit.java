@@ -1,27 +1,17 @@
 package upbit;
 
-import java.io.File;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.jfree.date.DateUtilities;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import com.google.gson.JsonObject;
-
 import gui.GUI;
-import gui.OrderTableElement;
 import upbit.CoinList.CoinSymbol;
 import upbit.CoinList.Market;
 import upbit.JsonManager.JsonKey;

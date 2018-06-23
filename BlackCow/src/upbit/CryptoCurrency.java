@@ -7,12 +7,12 @@ import java.util.LinkedList;
 import org.jfree.date.DateUtilities;
 import org.json.simple.JSONObject;
 
-import upbit.CoinList.CoinNameKR;
 import upbit.CoinList.CoinSymbol;
 import upbit.CoinList.Market;
 import upbit.JsonManager.JsonKey;
 import upbit.Request.TermType;
 
+@SuppressWarnings("serial")
 public class CryptoCurrency implements Serializable
 {	
 	private LinkedList<JSONObject> objectList;

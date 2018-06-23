@@ -1,15 +1,6 @@
 package gui;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-
-import javax.swing.table.DefaultTableModel;
-
-import upbit.CryptoCurrency;
-import upbit.CoinList.CoinSymbol;
-import upbit.CoinList.Market;
-import upbit.JsonManager.JsonKey;
-import upbit.Request.TermType;
 
 public class OrderTableElement
 {

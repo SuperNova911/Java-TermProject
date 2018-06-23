@@ -29,11 +29,6 @@ public class OrderBook
 		showIndex = 0;
 	}
 	
-//	public void addOrderBookElement(String price, String quantity, String percentage, boolean buy)
-//	{
-//		orderBookElementList.add(new OrderBookElement(price, quantity, percentage, buy));
-//	}
-	
 	public OrderBookElement getOrderBookElement(int index)
 	{
 		try
@@ -48,29 +43,7 @@ public class OrderBook
 	}
 	
 	public void updateOrderBook(OrderBook input)
-	{
-//		int startIndex;
-//		
-//		ArrayList<OrderBookElement> inputList = input.getOrderBookElementList();
-//
-//		int searchIndex;
-//		
-//		for (searchIndex = 0; searchIndex < 10; searchIndex++)
-//		{
-//			for (int i = 0; i < showIndex + 10; i ++)
-//			{
-//				if (getOrderBookElement(i).getPrice() == input.getOrderBookElement(searchIndex).getPrice())
-//				{
-//					startIndex = i;
-//					
-//				}
-//			}
-//		}
-//		
-//		// 가격 내려감, 위의 리스트는 그냥 둠
-//		orderBookElementList.addAll(inputList);
-//		startIndex = showIndex + 10;
-		
+	{		
 		ArrayList<OrderBookElement> baseList = getOrderBookElementList();
 		ArrayList<OrderBookElement> inputList = input.getOrderBookElementList();
 		ArrayList<OrderBookElement> newList = new ArrayList<OrderBookElement>();

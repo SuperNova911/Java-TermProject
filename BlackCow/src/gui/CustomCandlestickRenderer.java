@@ -6,16 +6,15 @@ import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.geom.Rectangle2D;
 
-import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.CrosshairState;
 import org.jfree.chart.plot.PlotRenderingInfo;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.CandlestickRenderer;
 import org.jfree.chart.renderer.xy.XYItemRendererState;
-import org.jfree.data.xy.OHLCDataset;
 import org.jfree.data.xy.XYDataset;
 
+@SuppressWarnings("serial")
 public class CustomCandlestickRenderer extends CandlestickRenderer
 {
 	public CustomCandlestickRenderer()

@@ -2,10 +2,9 @@ package upbit;
 
 import java.io.Serializable;
 
-import org.omg.PortableServer.ServantRetentionPolicyValue;
-
 import upbit.CoinList.CoinSymbol;
 
+@SuppressWarnings("serial")
 public class Wallet implements Serializable
 {
 	private CoinSymbol coinSymbol;

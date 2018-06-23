@@ -3,7 +3,6 @@ package gui;
 import java.text.DecimalFormat;
 
 import upbit.CoinList.CoinSymbol;
-import upbit.CoinList.Market;
 
 public class MyCoinTableElement
 {

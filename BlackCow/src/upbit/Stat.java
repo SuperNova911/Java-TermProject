@@ -1,8 +1,8 @@
 package upbit;
 
 import java.io.Serializable;
-import java.text.DecimalFormat;
 
+@SuppressWarnings("serial")
 public class Stat implements Serializable
 {
 	private double seed;

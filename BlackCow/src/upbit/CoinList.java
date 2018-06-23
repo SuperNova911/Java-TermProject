@@ -3,8 +3,6 @@ package upbit;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import upbit.CoinList.CoinNameKR;
-
 public class CoinList
 {
 	public enum Market

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 
 import upbit.CoinList.CoinSymbol;
 
+@SuppressWarnings("serial")
 public class Account implements Serializable
 {
 	private ArrayList<Wallet> walletList;

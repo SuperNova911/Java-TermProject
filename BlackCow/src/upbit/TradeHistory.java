@@ -6,6 +6,7 @@ import java.util.Date;
 import upbit.CoinList.CoinSymbol;
 import upbit.CoinList.Market;
 
+@SuppressWarnings("serial")
 public class TradeHistory implements Serializable
 {
 	public enum TradeType

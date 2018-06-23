@@ -6,10 +6,6 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
-
 import upbit.CoinList.CoinSymbol;
 import upbit.CoinList.Market;
 

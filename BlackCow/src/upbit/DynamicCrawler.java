@@ -4,17 +4,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 
-import org.jsoup.Connection.Base;
 import org.openqa.selenium.By;
-import org.openqa.selenium.Dimension;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.By.ByClassName;
-import org.openqa.selenium.By.ByXPath;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.interactions.Action;
 import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -33,7 +28,6 @@ public class DynamicCrawler
 	private boolean isReady = false;
 	private boolean headless = false;
 	private String baseXPath = "//*[@id=\"root\"]/div/div/div[3]/div/section[1]/div/div[1]/article/span[2]/div/div/div[1]/table/tbody";
-	private String upbitAddress = "https://upbit.com/home";
 	
 	
 	public DynamicCrawler(boolean headless)
