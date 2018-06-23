@@ -10,67 +10,52 @@ import java.io.ObjectOutputStream;
 
 public class ObjectIO
 {
-	static class Coin
+	public static String PATH_DOCUMENT = System.getProperty("user.home") + "\\Documents\\BlackCow\\";
+	public static String NAME_ACCOUNT = "account.BlackCow";
+	public static String NAME_CRYPTO = "crypto.BlackCow";
+
+	public static void save(Object object, String name, String path)
 	{
-		public static String COIN_PATH = "./crypto/";
-		
-		public static void save(CryptoCurrency cryptoCurrency, String name)
+		try
 		{
-			try
-			{
-				File file = new File(name);
-				FileOutputStream fileOutputStream = new FileOutputStream(file);
-				ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-				
-				objectOutputStream.writeObject(cryptoCurrency);
-				objectOutputStream.flush();
-				objectOutputStream.close();
-			}
-			catch (FileNotFoundException e)
-			{
-				// TODO 자동 생성된 catch 블록
-				e.printStackTrace();
-			}
-			catch (IOException e)
-			{
-				// TODO 자동 생성된 catch 블록
-				e.printStackTrace();
-			}
+			createDirectory(path);
+			File file = new File(path + name);
+			FileOutputStream fileOutputStream = new FileOutputStream(file);
+			ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+
+			objectOutputStream.writeObject(object);
+			objectOutputStream.close();
 		}
-		
-		public static CryptoCurrency load(String name)
+		catch (FileNotFoundException e)
 		{
-			CryptoCurrency cryptoCurrency = null;
-			
-			try
-			{
-				File file = new File(COIN_PATH + name);
-				ObjectInputStream objectInputStream = new ObjectInputStream(new FileInputStream(file));
-				
-				cryptoCurrency = (CryptoCurrency) objectInputStream.readObject();
-				objectInputStream.close();
-			}
-			catch (FileNotFoundException e)
-			{
-				// TODO 자동 생성된 catch 블록
-				e.printStackTrace();
-			}
-			catch (ClassNotFoundException e)
-			{
-				// TODO 자동 생성된 catch 블록
-				e.printStackTrace();
-			}
-			catch (IOException e)
-			{
-				// TODO 자동 생성된 catch 블록
-				e.printStackTrace();
-			}
-			
-			return cryptoCurrency;
+			e.printStackTrace();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
 		}
 	}
-	
-	
+
+	public static Object load(String name, String path) throws Exception
+	{
+		try
+		{
+			File file = new File(path + name);
+			FileInputStream fileInputStream = new FileInputStream(file);
+			ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+
+			Object object = objectInputStream.readObject();
+			objectInputStream.close();
+
+			return object;
+		}
+		catch (ClassNotFoundException | IOException e)
+		{
+			System.out.println("Failed to load, " + name + ", " + path);
+			throw new Exception();
+		}
+	}
+
 	public static void createDirectory(String name)
 	{
 		File file = new File(name);
