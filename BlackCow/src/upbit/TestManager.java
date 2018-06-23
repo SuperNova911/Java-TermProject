@@ -225,6 +225,12 @@ public class TestManager
 //		
 //		for (String str : orderList)
 //			System.out.println(str);
+
+		String data = "<html>100%<br/>+123,42.2<html/>";
+		
+		data = data.substring(data.indexOf("<br/>") + 5, data.indexOf("<html/>"));
+		
+		System.out.println(data);
 	}
 	
 	public static void kappa()
