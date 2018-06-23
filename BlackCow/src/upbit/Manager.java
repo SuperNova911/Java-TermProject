@@ -13,6 +13,7 @@ public class Manager
 	private Upbit upbit;
 	private GUI gui;
 	private DynamicCrawler crawler;
+	private Stat stat;
 	
 	
 	public Manager()
@@ -27,11 +28,21 @@ public class Manager
 		long startTime, endTime;
 		startTime = System.currentTimeMillis();
 		
-		scheduledExecutor = new ScheduledThreadPoolExecutor(4);
-		executorService = new ThreadPoolExecutor(6, 8, 5, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
+		scheduledExecutor = new ScheduledThreadPoolExecutor(6);
+		executorService = new ThreadPoolExecutor(4, 8, 5, TimeUnit.SECONDS, new LinkedBlockingQueue<Runnable>());
 		
+//		SaveManager saveManager = new SaveManager();
+//		
+//		if (saveManager.load())
+//		{
+//			account = saveManager.getAccountList().get(0);
+//		}
+//		else
+//		{
+//			saveManager.getAccountList().add(account);
+//		}		
 		account = new Account("id", "password", 5000000);
-		upbit = new Upbit(account);
+		account.setStat(new Stat(account.getKRW()));
 		
 		Future<?> futureUpbit = executorService.submit(()-> upbit = new Upbit(account));
 		Future<?> futureCrawler = executorService.submit(()-> crawler = new DynamicCrawler(true));
@@ -54,6 +65,8 @@ public class Manager
 		upbit.setExecutorService(executorService);
 		upbit.setGui(gui);
 		upbit.setCrawler(crawler);
+//		upbit.setCryptoList(saveManager.getCryptoList());
+//		upbit.setSaveManager(saveManager);
 		
 		// GUI
 		gui.setCrawler(crawler);	
@@ -62,9 +75,14 @@ public class Manager
 		
 		// DynamicCralwer
 		crawler.setExecutorService(executorService);
+		
+		// SavaManager
+//		saveManager.setScheduledExecutor(scheduledExecutor);
+//		saveManager.setUpbit(upbit);
+//		saveManager.autoSave();
 
+		futureUpbit = executorService.submit(() -> upbit.initiate());
 		gui.initiate();
-		upbit.initiate();
 		crawler.initiate();
 		
 		// GUI 보여주기

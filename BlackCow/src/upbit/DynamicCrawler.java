@@ -133,7 +133,7 @@ public class DynamicCrawler
 	public boolean moveTo(String url)
 	{
 		if (driver.getCurrentUrl().equals(url))
-			return true;
+			return false;
 		
 		try
 		{
@@ -189,6 +189,7 @@ public class DynamicCrawler
 		moveTo(url);
 		waitUntilLoad(30, By.cssSelector(selector));
 		scrollToElement(driver.findElement(By.cssSelector(selector2)));
+		isReady = true;
 		
 		String data = driver.findElement(By.cssSelector(selector)).getText();
 		data = data.replaceAll("-\n",  "").replaceAll(",", "").replaceAll("%", "");

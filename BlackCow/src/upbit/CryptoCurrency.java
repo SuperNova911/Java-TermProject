@@ -13,10 +13,6 @@ import upbit.CoinList.Market;
 import upbit.JsonManager.JsonKey;
 import upbit.Request.TermType;
 
-/**
- * @author suwha
- *
- */
 public class CryptoCurrency implements Serializable
 {	
 	private LinkedList<JSONObject> objectList;

@@ -1,8 +1,12 @@
 package upbit;
 
+import java.io.Serializable;
+
+import org.omg.PortableServer.ServantRetentionPolicyValue;
+
 import upbit.CoinList.CoinSymbol;
 
-public class Wallet
+public class Wallet implements Serializable
 {
 	private CoinSymbol coinSymbol;
 	private double balance;
@@ -17,13 +21,14 @@ public class Wallet
 	{
 		setCoinSymbol(coinSymbol);
 		setBalance(balance);
-		setAveragePrice(balance, buyPrice);
+		setAveragePrice(buyPrice);
 	}
 	
 	public boolean addBalance(double balance, double buyPrice)
 	{
 		if (balance >= 0)
 		{
+			updateAveragePrice(balance, buyPrice);
 			this.balance += balance;
 			return true;
 		}
@@ -46,9 +51,9 @@ public class Wallet
 		return false;
 	}
 	
-	public void setAveragePrice(double balance, double buyPrice)
+	public void updateAveragePrice(double balance, double buyPrice)
 	{
-		this.averagePrice = (this.balance * this.averagePrice + balance * buyPrice) / (this.balance + balance);
+		this.setAveragePrice((this.balance * this.getAveragePrice() + balance * buyPrice) / (this.balance + balance));
 	}
 
 	
@@ -81,5 +86,10 @@ public class Wallet
 	public double getAveragePrice()
 	{
 		return averagePrice;
+	}
+
+	public void setAveragePrice(double averagePrice)
+	{
+		this.averagePrice = averagePrice;
 	}
 }

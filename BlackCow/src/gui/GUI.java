@@ -10,6 +10,7 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartMouseEvent;
@@ -37,11 +38,13 @@ import upbit.JsonManager.JsonKey;
 import upbit.Order;
 import upbit.OrderBookElement;
 import upbit.Request.TermType;
+import upbit.Stat;
 import upbit.Upbit;
 import upbit.Wallet;
 
 import javax.swing.JScrollPane;
 import javax.swing.JLayeredPane;
+import javax.lang.model.element.ElementKind;
 import javax.swing.Box;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
@@ -100,11 +103,13 @@ import java.awt.Component;
 import javax.swing.border.CompoundBorder;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.ImageIcon;
 import javax.swing.JSlider;
 import javax.swing.UIManager;
 import javax.swing.SpinnerNumberModel;
 import java.awt.event.MouseWheelListener;
 import java.awt.event.MouseWheelEvent;
+import javax.swing.JProgressBar;
 
 public class GUI extends JFrame
 {
@@ -135,10 +140,15 @@ public class GUI extends JFrame
 	private double buySellRatio;
 	
 	DecimalFormat decimalFormat;
+	
+	private ImageIcon icon;
 
 	private JPanel contentPane;
 	private JPanel panel_Chart;
+	private JPanel panel_LoadingOrderBook;
+	private JScrollPane scrollPane_OrderBook;
 	private ChartPanel chartPanel;
+	private JLayeredPane layeredPane_OrderBook;
 	private JFreeChart chart;
 	
 	private JTextField textField_SearchKRW;
@@ -162,6 +172,7 @@ public class GUI extends JFrame
 	private JTable table_TradeHistoryNotComplete;
 	private JTable table_TradeHistoryComplete;
 	
+	private JLabel label_InfoIcon;
 	private JLabel label_InfoHighPrice;
 	private JLabel label_InfoLowPrice;
 	private JLabel label_InfoTradePrice;
@@ -185,6 +196,11 @@ public class GUI extends JFrame
 	private JLabel label_SellTotalSymbol;
 	
 	private JLabel label_ChartInfo;
+	
+	private JLabel label_AssetValue;
+	private JLabel label_Seed;
+	private JLabel label_Earnings;
+	private JLabel label_EarningsRate;
 
 
 
@@ -218,38 +234,81 @@ public class GUI extends JFrame
 		contentPane.add(panel_Right);
 		panel_Right.setLayout(null);
 		
-		JPanel panel_3 = new JPanel();
-		panel_3.setBackground(Color.WHITE);
-		panel_3.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panel_3.setBounds(0, 0, 300, 160);
-		panel_Right.add(panel_3);
+		JPanel panel_Asset = new JPanel();
+		panel_Asset.setBackground(Color.WHITE);
+		panel_Asset.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		panel_Asset.setBounds(0, 0, 300, 160);
+		panel_Right.add(panel_Asset);
+		panel_Asset.setLayout(null);
 		
-		JScrollPane scrollPane_OrderBook = new JScrollPane();
-		scrollPane_OrderBook.setBounds(0, 160, 300, 603);
-		panel_Right.add(scrollPane_OrderBook);
+		JLabel label_AssetValueText = new JLabel("³ªÀÇ ÀÚ»ê °¡Ä¡");
+		label_AssetValueText.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 14));
+		label_AssetValueText.setBounds(12, 10, 162, 15);
+		panel_Asset.add(label_AssetValueText);
+		
+		label_AssetValue = new JLabel("0 KRW");
+		label_AssetValue.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 26));
+		label_AssetValue.setHorizontalAlignment(SwingConstants.RIGHT);
+		label_AssetValue.setBounds(73, 35, 215, 30);
+		panel_Asset.add(label_AssetValue);
+		
+		JLabel label_SeedText = new JLabel("½ÃÀÛ ±Ý¾×");
+		label_SeedText.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
+		label_SeedText.setBounds(12, 90, 57, 15);
+		panel_Asset.add(label_SeedText);
+		
+		JLabel label_EarningsText = new JLabel("¼öÀÍ");
+		label_EarningsText.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
+		label_EarningsText.setBounds(12, 112, 57, 15);
+		panel_Asset.add(label_EarningsText);
+		
+		label_Seed = new JLabel("0");
+		label_Seed.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 12));
+		label_Seed.setBounds(81, 90, 111, 15);
+		panel_Asset.add(label_Seed);
+		
+		label_Earnings = new JLabel("0");
+		label_Earnings.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 12));
+		label_Earnings.setBounds(81, 112, 93, 15);
+		panel_Asset.add(label_Earnings);
+		
+		JLabel label_EarningsRateText = new JLabel("¼öÀÍ·ü");
+		label_EarningsRateText.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
+		label_EarningsRateText.setBounds(12, 134, 57, 15);
+		panel_Asset.add(label_EarningsRateText);
+		
+		label_EarningsRate = new JLabel("0.00%");
+		label_EarningsRate.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 12));
+		label_EarningsRate.setBounds(81, 134, 93, 15);
+		panel_Asset.add(label_EarningsRate);
+		
+		layeredPane_OrderBook = new JLayeredPane();
+		layeredPane_OrderBook.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		layeredPane_OrderBook.setBounds(0, 160, 300, 598);
+		panel_Right.add(layeredPane_OrderBook);
+		
+		scrollPane_OrderBook = new JScrollPane();
+		scrollPane_OrderBook.setBounds(0, 0, 300, 598);
+		layeredPane_OrderBook.add(scrollPane_OrderBook, 0);
 		
 		table_OrderBook = new JTable();
 		table_OrderBook.addMouseListener(new TableListener_OrderBook());
 		table_OrderBook.setBackground(Color.WHITE);
 		table_OrderBook.setShowVerticalLines(false);
 		table_OrderBook.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
-		table_OrderBook.setModel(new DefaultTableModel(
-			new Object[][] {
-			},
-			new String[] {
-				"New column", "New column", "New column", "New column"
-			}
-		) {
-			Class[] columnTypes = new Class[] {
-				String.class, String.class, String.class, String.class
-			};
-			public Class getColumnClass(int columnIndex) {
+		table_OrderBook.setModel(new DefaultTableModel(new Object[][] {}, new String[] { "", "", "", "" })
+		{
+			Class[] columnTypes = new Class[] { String.class, String.class, String.class, String.class };
+
+			public Class getColumnClass(int columnIndex)
+			{
 				return columnTypes[columnIndex];
 			}
-			boolean[] columnEditables = new boolean[] {
-				false, false, false, false
-			};
-			public boolean isCellEditable(int row, int column) {
+
+			boolean[] columnEditables = new boolean[] { false, false, false, false };
+
+			public boolean isCellEditable(int row, int column)
+			{
 				return columnEditables[column];
 			}
 		});
@@ -269,7 +328,20 @@ public class GUI extends JFrame
 		table_OrderBook.setTableHeader(null);
 		table_OrderBook.setRowHeight(30);
 		scrollPane_OrderBook.setViewportView(table_OrderBook);
-		
+
+		panel_LoadingOrderBook = new JPanel();
+		panel_LoadingOrderBook.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		panel_LoadingOrderBook.setBackground(Color.WHITE);
+		panel_LoadingOrderBook.setBounds(0, 0, 300, 598);
+		layeredPane_OrderBook.add(panel_LoadingOrderBook, new Integer(300));
+		panel_LoadingOrderBook.setLayout(null);
+
+		JLabel label_LoadingOrderBook = new JLabel("OrderBook ºÒ·¯¿À´Â Áß");
+		label_LoadingOrderBook.setHorizontalAlignment(SwingConstants.CENTER);
+		label_LoadingOrderBook.setBounds(12, 161, 276, 21);
+		label_LoadingOrderBook.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 15));
+		panel_LoadingOrderBook.add(label_LoadingOrderBook);
+
 		JPanel panel_Center = new JPanel();
 		panel_Center.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
 		panel_Center.setBounds(300, 21, 834, 760);
@@ -587,70 +659,73 @@ public class GUI extends JFrame
 		
 		JScrollPane scrollPane_TradeNotComplete = new JScrollPane();
 		scrollPane_TradeNotComplete.getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
-		tabbedPane_TradeHistory.addTab("¹Ì Ã¤°á ÁÖ¹®", null, scrollPane_TradeNotComplete, null);
+		tabbedPane_TradeHistory.addTab("¹Ì Ã¼°á ÁÖ¹®", null, scrollPane_TradeNotComplete, null);
 		
 		table_TradeHistoryNotComplete = new JTable();
+		table_TradeHistoryNotComplete.addMouseListener(new TableListener_TradeHistory());
 		table_TradeHistoryNotComplete.setModel(new DefaultTableModel(
-			new Object[][] {}, new String[] { "ÁÖ¹®½Ã°£", "±¸ºÐ", "Ã¼°á°¡°Ý", "Ã¼°á¼ö·®", "Ã¼°á±Ý¾×" }) 
-		{
-			Class[] columnTypes = new Class[] 
-			{
-				String.class, String.class, String.class, String.class, String.class
+			new Object[][] {
+			},
+			new String[] {
+				"\uB9C8\uCF13", "\uC774\uB984", "\uC8FC\uBB38\uC2DC\uAC04", "\uAD6C\uBD84", "\uCCB4\uACB0 \uAC00\uACA9", "\uCCB4\uACB0 \uC218\uB7C9", "\uCCB4\uACB0 \uAE08\uC561", "\uC8FC\uBB38\uCDE8\uC18C"
+			}
+		) {
+			Class[] columnTypes = new Class[] {
+				String.class, String.class, String.class, String.class, String.class, Object.class, Object.class, Object.class
 			};
-			public Class getColumnClass(int columnIndex) 
-			{
+			public Class getColumnClass(int columnIndex) {
 				return columnTypes[columnIndex];
 			}
-			public boolean isCellEditable(int row, int column)
-			{
-				return false;
-			}
 		});
-		table_TradeHistoryNotComplete.getColumnModel().getColumn(0).setResizable(false);
-		table_TradeHistoryNotComplete.getColumnModel().getColumn(0).setPreferredWidth(70);
-		table_TradeHistoryNotComplete.getColumnModel().getColumn(1).setResizable(false);
-		table_TradeHistoryNotComplete.getColumnModel().getColumn(1).setPreferredWidth(40);
-		table_TradeHistoryNotComplete.getColumnModel().getColumn(2).setResizable(false);
-		table_TradeHistoryNotComplete.getColumnModel().getColumn(2).setPreferredWidth(100);
-		table_TradeHistoryNotComplete.getColumnModel().getColumn(3).setResizable(false);
-		table_TradeHistoryNotComplete.getColumnModel().getColumn(3).setPreferredWidth(100);
-		table_TradeHistoryNotComplete.getColumnModel().getColumn(4).setResizable(false);
-		table_TradeHistoryNotComplete.getColumnModel().getColumn(4).setPreferredWidth(100);
+		for (int i = 0; i < 8; i++)
+		{
+			table_TradeHistoryNotComplete.getColumnModel().getColumn(i).setResizable(false);
+			table_TradeHistoryNotComplete.getColumnModel().getColumn(i).setCellRenderer(new CustomCellRenderer_TradeHistoryTable());
+		}
+		table_TradeHistoryNotComplete.getColumnModel().getColumn(0).setPreferredWidth(40);
+		table_TradeHistoryNotComplete.getColumnModel().getColumn(1).setPreferredWidth(50);
+		table_TradeHistoryNotComplete.getColumnModel().getColumn(2).setPreferredWidth(75);
+		table_TradeHistoryNotComplete.getColumnModel().getColumn(3).setPreferredWidth(45);
+		table_TradeHistoryNotComplete.getColumnModel().getColumn(4).setPreferredWidth(95);
+		table_TradeHistoryNotComplete.getColumnModel().getColumn(5).setPreferredWidth(95);
+		table_TradeHistoryNotComplete.getColumnModel().getColumn(6).setPreferredWidth(95);
+		table_TradeHistoryNotComplete.getColumnModel().getColumn(7).setPreferredWidth(60);
 		table_TradeHistoryNotComplete.setRowHeight(25);
 		table_TradeHistoryNotComplete.getTableHeader().setReorderingAllowed(false);
 		scrollPane_TradeNotComplete.setViewportView(table_TradeHistoryNotComplete);
 		
 		JScrollPane scrollPane_TradeComplete = new JScrollPane();
 		scrollPane_TradeComplete.getVerticalScrollBar().setPreferredSize(new Dimension(0, 0));
-		tabbedPane_TradeHistory.addTab("Ã¤°á ¿Ï·á ³»¿ª", null, scrollPane_TradeComplete, null);
+		tabbedPane_TradeHistory.addTab("Ã¼°á ¿Ï·á ³»¿ª", null, scrollPane_TradeComplete, null);
 		
 		table_TradeHistoryComplete = new JTable();
 		table_TradeHistoryComplete.setModel(new DefaultTableModel(
-			new Object[][] {}, new String[] { "ÁÖ¹®½Ã°£", "±¸ºÐ", "Ã¼°á°¡°Ý", "Ã¼°á¼ö·®", "Ã¼°á±Ý¾×" }) 
-		{
-			Class[] columnTypes = new Class[] 
-			{
-				String.class, String.class, String.class, String.class, String.class
+			new Object[][] {
+			},
+			new String[] {
+				"\uB9C8\uCF13", "\uC774\uB984", "\uC8FC\uBB38\uC2DC\uAC04", "\uAD6C\uBD84", "\uCCB4\uACB0 \uAC00\uACA9", "\uCCB4\uACB0 \uC218\uB7C9", "\uCCB4\uACB0 \uAE08\uC561", ""
+			}
+		) {
+			Class[] columnTypes = new Class[] {
+				String.class, String.class, String.class, String.class, String.class, Object.class, Object.class, Object.class
 			};
-			public Class getColumnClass(int columnIndex) 
-			{
+			public Class getColumnClass(int columnIndex) {
 				return columnTypes[columnIndex];
 			}
-			public boolean isCellEditable(int row, int column)
-			{
-				return false;
-			}
 		});
-		table_TradeHistoryComplete.getColumnModel().getColumn(0).setResizable(false);
-		table_TradeHistoryComplete.getColumnModel().getColumn(0).setPreferredWidth(70);
-		table_TradeHistoryComplete.getColumnModel().getColumn(1).setResizable(false);
-		table_TradeHistoryComplete.getColumnModel().getColumn(1).setPreferredWidth(40);
-		table_TradeHistoryComplete.getColumnModel().getColumn(2).setResizable(false);
-		table_TradeHistoryComplete.getColumnModel().getColumn(2).setPreferredWidth(100);
-		table_TradeHistoryComplete.getColumnModel().getColumn(3).setResizable(false);
-		table_TradeHistoryComplete.getColumnModel().getColumn(3).setPreferredWidth(100);
-		table_TradeHistoryComplete.getColumnModel().getColumn(4).setResizable(false);
-		table_TradeHistoryComplete.getColumnModel().getColumn(4).setPreferredWidth(100);
+		for (int i = 0; i < 8; i++)
+		{
+			table_TradeHistoryComplete.getColumnModel().getColumn(i).setResizable(false);
+			table_TradeHistoryComplete.getColumnModel().getColumn(i).setCellRenderer(new CustomCellRenderer_TradeHistoryTable());
+		}
+		table_TradeHistoryComplete.getColumnModel().getColumn(0).setPreferredWidth(40);
+		table_TradeHistoryComplete.getColumnModel().getColumn(1).setPreferredWidth(50);
+		table_TradeHistoryComplete.getColumnModel().getColumn(2).setPreferredWidth(75);
+		table_TradeHistoryComplete.getColumnModel().getColumn(3).setPreferredWidth(45);
+		table_TradeHistoryComplete.getColumnModel().getColumn(4).setPreferredWidth(95);
+		table_TradeHistoryComplete.getColumnModel().getColumn(5).setPreferredWidth(95);
+		table_TradeHistoryComplete.getColumnModel().getColumn(6).setPreferredWidth(95);
+		table_TradeHistoryComplete.getColumnModel().getColumn(7).setPreferredWidth(60);
 		table_TradeHistoryComplete.setRowHeight(25);
 		table_TradeHistoryComplete.getTableHeader().setReorderingAllowed(false);
 		scrollPane_TradeComplete.setViewportView(table_TradeHistoryComplete);
@@ -671,86 +746,90 @@ public class GUI extends JFrame
 		JLabel lblNewLabel = new JLabel("\uAC70\uB798\uB300\uAE08 (24H)");
 		lblNewLabel.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
 		lblNewLabel.setHorizontalAlignment(SwingConstants.LEFT);
-		lblNewLabel.setBounds(560, 10, 86, 15);
+		lblNewLabel.setBounds(650, 10, 86, 15);
 		panel_Info.add(lblNewLabel);
 		
 		label_InfoVolume = new JLabel("0");
 		label_InfoVolume.setHorizontalAlignment(SwingConstants.LEFT);
 		label_InfoVolume.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 10));
-		label_InfoVolume.setBounds(560, 27, 111, 15);
+		label_InfoVolume.setBounds(650, 27, 111, 15);
 		panel_Info.add(label_InfoVolume);
 		
 		JLabel lblNewLabel_2 = new JLabel("\uACE0\uAC00");
 		lblNewLabel_2.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
 		lblNewLabel_2.setHorizontalAlignment(SwingConstants.LEFT);
-		lblNewLabel_2.setBounds(445, 10, 57, 15);
+		lblNewLabel_2.setBounds(545, 10, 57, 15);
 		panel_Info.add(lblNewLabel_2);
 		
 		JLabel label = new JLabel("\uC800\uAC00");
 		label.setHorizontalAlignment(SwingConstants.LEFT);
 		label.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
-		label.setBounds(445, 26, 57, 15);
+		label.setBounds(545, 26, 57, 15);
 		panel_Info.add(label);
 		
 		label_InfoHighPrice = new JLabel("0");
 		label_InfoHighPrice.setForeground(Color.RED);
 		label_InfoHighPrice.setHorizontalAlignment(SwingConstants.RIGHT);
 		label_InfoHighPrice.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 12));
-		label_InfoHighPrice.setBounds(455, 9, 76, 15);
+		label_InfoHighPrice.setBounds(555, 9, 76, 15);
 		panel_Info.add(label_InfoHighPrice);
 		
 		label_InfoLowPrice = new JLabel("0");
 		label_InfoLowPrice.setHorizontalAlignment(SwingConstants.RIGHT);
 		label_InfoLowPrice.setForeground(Color.BLUE);
 		label_InfoLowPrice.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 12));
-		label_InfoLowPrice.setBounds(455, 26, 76, 15);
+		label_InfoLowPrice.setBounds(555, 26, 76, 15);
 		panel_Info.add(label_InfoLowPrice);
 		
 		JLabel label_3 = new JLabel("\uC804\uC77C\uB300\uBE44");
 		label_3.setHorizontalAlignment(SwingConstants.LEFT);
 		label_3.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
-		label_3.setBounds(340, 10, 57, 15);
+		label_3.setBounds(440, 10, 57, 15);
 		panel_Info.add(label_3);
 		
 		label_InfoChangeRate = new JLabel("0%");
 		label_InfoChangeRate.setHorizontalAlignment(SwingConstants.RIGHT);
 		label_InfoChangeRate.setForeground(Color.BLACK);
 		label_InfoChangeRate.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 12));
-		label_InfoChangeRate.setBounds(285, 26, 76, 15);
+		label_InfoChangeRate.setBounds(385, 26, 76, 15);
 		panel_Info.add(label_InfoChangeRate);
 		
 		label_InfoChangePrice = new JLabel("0");
 		label_InfoChangePrice.setHorizontalAlignment(SwingConstants.RIGHT);
 		label_InfoChangePrice.setForeground(Color.BLACK);
 		label_InfoChangePrice.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 12));
-		label_InfoChangePrice.setBounds(365, 26, 57, 15);
+		label_InfoChangePrice.setBounds(465, 26, 57, 15);
 		panel_Info.add(label_InfoChangePrice);
 		
 		JPanel panel_InfoLeft = new JPanel();
 		panel_InfoLeft.setBackground(Color.WHITE);
 		panel_InfoLeft.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		panel_InfoLeft.setBounds(0, 0, 310, 55);
+		panel_InfoLeft.setBounds(0, 0, 373, 55);
 		panel_Info.add(panel_InfoLeft);
 		panel_InfoLeft.setLayout(null);
 		
 		label_InfoName = new JLabel("Name");
-		label_InfoName.setBounds(15, 8, 275, 25);
+		label_InfoName.setBounds(70, 8, 275, 25);
 		panel_InfoLeft.add(label_InfoName);
 		label_InfoName.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 18));
 		label_InfoName.setHorizontalAlignment(SwingConstants.LEFT);
 		
 		label_InfoSymbol = new JLabel("Symbol");
-		label_InfoSymbol.setBounds(15, 30, 105, 17);
+		label_InfoSymbol.setBounds(70, 30, 105, 17);
 		panel_InfoLeft.add(label_InfoSymbol);
 		label_InfoSymbol.setHorizontalAlignment(SwingConstants.LEFT);
 		label_InfoSymbol.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
 		
 		label_InfoTradePrice = new JLabel("0");
-		label_InfoTradePrice.setBounds(105, 9, 185, 30);
+		label_InfoTradePrice.setBounds(150, 9, 185, 30);
 		panel_InfoLeft.add(label_InfoTradePrice);
 		label_InfoTradePrice.setForeground(Color.BLACK);
 		label_InfoTradePrice.setHorizontalAlignment(SwingConstants.RIGHT);
 		label_InfoTradePrice.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 18));
+			
+		label_InfoIcon = new JLabel();
+		label_InfoIcon.setBounds(15, 8, 40, 40);
+		panel_InfoLeft.add(label_InfoIcon);
 		
 		panel_Chart = new JPanel();
 		panel_Chart.setBackground(Color.WHITE);
@@ -982,34 +1061,27 @@ public class GUI extends JFrame
 		panel_MyCoin.add(scrollPane_MyCoin);
 		
 		table_MyCoin = new JTable();
+		table_MyCoin.addMouseListener(new TableListener_MyCoin());
 		table_MyCoin.setFont(new Font("¸¼Àº °íµñ", Font.PLAIN, 12));
 		table_MyCoin.setShowVerticalLines(false);
-		table_MyCoin.setModel(new DefaultTableModel(
-				new Object[][] {}, new String[] { "ÀÌ¸§", "º¸À¯(Æò°¡±Ý)", "¸Å¼öÆò±Õ°¡", "¼öÀÍ·ü" }) 
+		table_MyCoin.setModel(new DefaultTableModel(new Object[][] {}, new String[] { "\uC774\uB984",
+				"\uBCF4\uC720(\uD3C9\uAC00\uAE08)", "\uB9E4\uC218\uD3C9\uADE0\uAC00", "\uC218\uC775\uB960" })
 		{
-			Class[] columnTypes = new Class[] 
-			{
-				String.class, String.class, String.class, String.class
-			};
-			public Class getColumnClass(int columnIndex) 
+			Class[] columnTypes = new Class[] { String.class, String.class, String.class, String.class };
+
+			public Class getColumnClass(int columnIndex)
 			{
 				return columnTypes[columnIndex];
 			}
-			public boolean isCellEditable(int row, int column)
-			{
-				return false;
-			}
 		});
-		table_MyCoin.getColumnModel().getColumn(0).setResizable(false);
-		table_MyCoin.getColumnModel().getColumn(1).setResizable(false);
-		table_MyCoin.getColumnModel().getColumn(1).setPreferredWidth(100);
-		table_MyCoin.getColumnModel().getColumn(2).setResizable(false);
-		table_MyCoin.getColumnModel().getColumn(2).setPreferredWidth(100);
-		table_MyCoin.getColumnModel().getColumn(3).setResizable(false);
-		table_MyCoin.getColumnModel().getColumn(0).setCellRenderer(new CustomCellRenderer_MyCoinTable());
-		table_MyCoin.getColumnModel().getColumn(1).setCellRenderer(new CustomCellRenderer_MyCoinTable());
-		table_MyCoin.getColumnModel().getColumn(2).setCellRenderer(new CustomCellRenderer_MyCoinTable());
-		table_MyCoin.getColumnModel().getColumn(3).setCellRenderer(new CustomCellRenderer_MyCoinTable());
+		for (int i = 0; i < 4; i++)
+		{
+			table_MyCoin.getColumnModel().getColumn(i).setResizable(false);
+			table_MyCoin.getColumnModel().getColumn(i).setCellRenderer(new CustomCellRenderer_MyCoinTable());
+		}
+		table_MyCoin.getColumnModel().getColumn(0).setPreferredWidth(60);
+		table_MyCoin.getColumnModel().getColumn(1).setPreferredWidth(80);
+		table_MyCoin.getColumnModel().getColumn(2).setPreferredWidth(70);
 		table_MyCoin.setRowHeight(40);
 		table_KRW.getTableHeader().setReorderingAllowed(false);
 		scrollPane_MyCoin.setViewportView(table_MyCoin);
@@ -1044,9 +1116,9 @@ public class GUI extends JFrame
 		setCurrentTerm(1);
 
 		clearBuySell();
-		updateCoinTable(Market.KRW);
+		updateCoinTable();
 		
-		updateInfo(getCurrentMarket(), getCurrentCoinSymbol());
+		updateInfo();
 	}
 	
 	public CoinTableElement getCoinTableElement(Market market, CoinSymbol coinSymbol)
@@ -1078,11 +1150,14 @@ public class GUI extends JFrame
 		coinTableElements.add(element);
 	}
 	
-	public void updateCoinTable(Market market)
+	public void updateCoinTable()
 	{
 		ArrayList<CryptoCurrency> list = upbit.getCryptoList();
-		DefaultTableModel model = null;
+		ArrayList<CoinSymbol> coinSymbolList;
+		CryptoCurrency cryptoCurrency;
+		DefaultTableModel model;
 		CoinTableElement element;
+		Market market = getCurrentMarket();
 
 		double volume;
 		double signedChangeRate;
@@ -1091,46 +1166,80 @@ public class GUI extends JFrame
 		{
 		case KRW:
 			model = (DefaultTableModel) table_KRW.getModel();
+			coinSymbolList = CoinList.listKRW;
 			break;		
 			
 		case BTC:
 			model = (DefaultTableModel) table_BTC.getModel();
+			coinSymbolList = CoinList.listBTC;
 			break;
 			
 		case ETH:
 			model = (DefaultTableModel) table_ETH.getModel();
+			coinSymbolList = CoinList.listETH;
 			break;
+			
+		default:
+			System.out.println("updateCoinTable(), Wrong Market input");
+			return;
 		}
 		
-		for (CryptoCurrency cryptoCurrency : list)
+		for (CoinSymbol coinSymbol : coinSymbolList)
 		{
-			if (cryptoCurrency.getMarket() != market)
-				continue;
+			element = getCoinTableElement(market, coinSymbol);
 			
-			element = getCoinTableElement(cryptoCurrency.getMarket(), cryptoCurrency.getCoinSymbol());
-			
-			if (cryptoCurrency.getName().equals(upbit.createName(market, cryptoCurrency.getCoinSymbol(), TermType.minutes, 60)))
+			try
 			{
-				volume = 0;
-				
-				for (int index = 0; index < 24; index++)
-				{
-					volume += Double.parseDouble(cryptoCurrency.getData(JsonKey.candleAccTradePrice, index));
-				}
-				
+				cryptoCurrency = upbit.getCryptoCurrency(upbit.createName(market, coinSymbol, TermType.minutes, 1));
 				element.setTradePrice(Double.parseDouble(cryptoCurrency.getData(JsonKey.tradePrice)));
-				element.setVolume(volume);
-				
+			}
+			catch (Exception e)
+			{
 				continue;
 			}
 			
-			if (cryptoCurrency.getName().equals(upbit.createName(market, cryptoCurrency.getCoinSymbol(), TermType.days, 1)))
+			try
 			{
+				cryptoCurrency = upbit.getCryptoCurrency(upbit.createName(market, coinSymbol, TermType.days, 1));
 				element.setChangeRate(Double.parseDouble(cryptoCurrency.getData(JsonKey.signedChangeRate)));
-				
+			}
+			catch (Exception e)
+			{
 				continue;
 			}
+			
+			element.setVolume(upbit.getVolumePrice(market, coinSymbol, 24));
 		}
+		
+//		for (CryptoCurrency cryptoCurrency : list)
+//		{
+//			if (cryptoCurrency.getMarket() != market)
+//				continue;
+//			
+//			element = getCoinTableElement(cryptoCurrency.getMarket(), cryptoCurrency.getCoinSymbol());
+//			
+//			if (cryptoCurrency.getName().equals(upbit.createName(market, cryptoCurrency.getCoinSymbol(), TermType.minutes, 60)))
+//			{
+//				volume = 0;
+//				
+//				for (int index = 0; index < 24; index++)
+//				{
+//					volume += Double.parseDouble(cryptoCurrency.getData(JsonKey.candleAccTradePrice, index));
+//				}
+//				
+//				element.setTradePrice(Double.parseDouble(cryptoCurrency.getData(JsonKey.tradePrice)));
+//				element.setVolume(volume);
+//				
+//				continue;
+//			}
+//			
+//			if (cryptoCurrency.getName().equals(upbit.createName(market, cryptoCurrency.getCoinSymbol(), TermType.days, 1)))
+//			{
+//				element.setChangeRate(Double.parseDouble(cryptoCurrency.getData(JsonKey.signedChangeRate)));
+//				
+//				continue;
+//			}
+//		}
 		
 		try
 		{
@@ -1364,9 +1473,11 @@ public class GUI extends JFrame
 		updateBuySell(true);
 	}
 	
-	public void updateInfo(Market market, CoinSymbol coinSymbol)
+	public void updateInfo()
 	{
 		CryptoCurrency cryptoCurrency;
+		Market market = getCurrentMarket();
+		CoinSymbol coinSymbol = getCurrentCoinSymbol();
 		
 		try
 		{
@@ -1396,7 +1507,7 @@ public class GUI extends JFrame
 		label_InfoLowPrice.setText(decimalFormat.format(Double.parseDouble(cryptoCurrency.getData(JsonKey.lowPrice))));
 		label_InfoChangeRate.setText((changeRate > 0 ? "+" : "") + decimalFormat.format(changeRate * 100) + "%");
 		label_InfoChangePrice.setText((changePrice > 0 ? "+" : "") + decimalFormat.format(changePrice));
-		label_InfoVolume.setText(decimalFormat.format(Math.round(upbit.getVolume(market, coinSymbol, 24))) + market);
+		label_InfoVolume.setText(decimalFormat.format(Math.round(upbit.getVolumePrice(market, coinSymbol, 24))) + market);
 
 		if (cryptoCurrency.getData(JsonKey.change).equals("RISE"))
 		{
@@ -1416,6 +1527,9 @@ public class GUI extends JFrame
 			label_InfoChangeRate.setForeground(Color.BLACK);
 			label_InfoChangePrice.setForeground(Color.BLACK);
 		}
+		
+		icon = new ImageIcon(".\\resource\\" + coinSymbol.toString() + ".png");
+		label_InfoIcon.setIcon(icon);
 	}
 	
 	public void swap(int a, int b)
@@ -1715,19 +1829,27 @@ public class GUI extends JFrame
 	public void updateMyCoinTable()
 	{
 		myCoinTableElements = new ArrayList<MyCoinTableElement>();
+		CryptoCurrency cryptoCurrency;
+		double tradePrice = 0;
 		
 		for (Wallet wallet : upbit.getAccount().getWalletList())
 		{
-			double price = 0;
 			try
 			{
-				price = Double.parseDouble(upbit.getCryptoCurrency(upbit.createName(Market.KRW, wallet.getCoinSymbol(), TermType.minutes, 1)).getData(JsonKey.tradePrice));
+				cryptoCurrency = upbit.getCryptoCurrency(upbit.createName(Market.KRW, wallet.getCoinSymbol(), TermType.minutes, 1));
+				tradePrice = Double.parseDouble(cryptoCurrency.getData(JsonKey.tradePrice));
 			} 
 			catch (Exception e)
 			{
-				
-			};
-			myCoinTableElements.add(new MyCoinTableElement(wallet.getCoinSymbol(), CoinList.getCoinNameKR(wallet.getCoinSymbol()).toString(), price * wallet.getBalance(), wallet.getAveragePrice(), 0));	
+			}
+			
+			myCoinTableElements.add(new MyCoinTableElement(
+					wallet.getCoinSymbol(),
+					CoinList.getCoinNameKR(wallet.getCoinSymbol()).toString(),
+					tradePrice * wallet.getBalance(),
+					wallet.getAveragePrice(), 
+					(((tradePrice * wallet.getBalance()) - (wallet.getAveragePrice() * wallet.getBalance())) / (wallet.getAveragePrice() * wallet.getBalance())) * 100,
+					(tradePrice * wallet.getBalance()) - (wallet.getAveragePrice() * wallet.getBalance())));
 		}
 		
 		DefaultTableModel model = (DefaultTableModel) table_MyCoin.getModel();
@@ -1740,8 +1862,42 @@ public class GUI extends JFrame
 		}
 	}
 	
+	public void showOrderBook(boolean show)
+	{
+		if (show)
+			panel_LoadingOrderBook.setVisible(false);
+		else
+			panel_LoadingOrderBook.setVisible(true);
+	}
 	
-	
+	public void updateAsset()
+	{	
+		upbit.updateStat();
+
+		Stat stat = upbit.getAccount().getStat();
+		
+		decimalFormat = new DecimalFormat("#,##0");
+		label_AssetValue.setText(decimalFormat.format(stat.getAssetValue()) + " KRW");
+		
+		label_Seed.setText(decimalFormat.format(stat.getSeed()));
+
+		label_Earnings.setText(stat.getEarnings() > 0 ? "+" + decimalFormat.format(stat.getEarnings()) : decimalFormat.format(stat.getEarnings()));
+
+		decimalFormat = new DecimalFormat("#,##0.00");
+		label_EarningsRate.setText(stat.getEarningsRate() > 0 ? "+" + decimalFormat.format(stat.getEarningsRate()) + "%" : decimalFormat.format(stat.getEarningsRate()) + "%");
+		
+		Color color;
+		
+		if (stat.getEarnings() > 0)
+			color = Color.RED;
+		else if (stat.getEarnings() < 0)
+			color = Color.BLUE;
+		else
+			color = Color.BLACK;
+
+		label_Earnings.setForeground(color);
+		label_EarningsRate.setForeground(color);
+	}
 	
 	
 	
@@ -1817,7 +1973,7 @@ public class GUI extends JFrame
 		
 		@Override
 		public void mouseClicked(java.awt.event.MouseEvent e)
-		{
+		{			
 			selectedRow = jTable.getSelectedRow();
 			CoinTableElement element = coinTableElements.get(selectedRow);
 			
@@ -1831,38 +1987,89 @@ public class GUI extends JFrame
 
 			updateBuySell(true);
 
-			updateInfo(element.getMarket(), element.getCoinSymbol());
+			updateInfo();
 			updateChart(getCurrentMarket(), getCurrentCoinSymbol(), getCurrentTermType(), getCurrentTerm(), 0, 99);
-			updateOrderTable(getCurrentMarket(), getCurrentCoinSymbol());
 			
+			crawler.setReady(false);
+			showOrderBook(false);
+			getExecutorService().submit(() -> upbit.updateOrderBook(getCurrentMarket(), getCurrentCoinSymbol()));
 		}
 
 		@Override
 		public void mouseEntered(java.awt.event.MouseEvent e)
 		{
-			// TODO ÀÚµ¿ »ý¼ºµÈ ¸Þ¼Òµå ½ºÅÓ
-			
 		}
 
 		@Override
 		public void mouseExited(java.awt.event.MouseEvent e)
 		{
-			// TODO ÀÚµ¿ »ý¼ºµÈ ¸Þ¼Òµå ½ºÅÓ
-			
 		}
 
 		@Override
 		public void mousePressed(java.awt.event.MouseEvent e)
 		{
-			// TODO ÀÚµ¿ »ý¼ºµÈ ¸Þ¼Òµå ½ºÅÓ
-			
 		}
 
 		@Override
 		public void mouseReleased(java.awt.event.MouseEvent e)
 		{
-			// TODO ÀÚµ¿ »ý¼ºµÈ ¸Þ¼Òµå ½ºÅÓ
+		}
+	}
+	
+	class TableListener_MyCoin implements MouseListener
+	{
+		@Override
+		public void mouseClicked(java.awt.event.MouseEvent e)
+		{
+			int select = table_MyCoin.getSelectedRow();
 			
+			MyCoinTableElement element = myCoinTableElements.get(select);
+			CoinTableElement coinTableElement = null;
+			
+			setCurrentCoinSymbol(element.getCoinSymbol());
+			
+			for (CoinTableElement coinTableElement2 : coinTableElements)
+			{
+				if (coinTableElement2.getCoinSymbol() == element.getCoinSymbol())
+				{
+					coinTableElement = coinTableElement2;
+					break;
+				}
+			}
+			
+			double tradePrice = coinTableElement.getTradePrice();
+
+			setBuyPrice(tradePrice);
+			setSellPrice(tradePrice);
+
+			updateBuySell(true);
+			
+			updateInfo();
+			updateChart(getCurrentMarket(), getCurrentCoinSymbol(), getCurrentTermType(), getCurrentTerm(), 0, 99);
+			
+			crawler.setReady(false);
+			showOrderBook(false);
+			getExecutorService().submit(() -> upbit.updateOrderBook(getCurrentMarket(), getCurrentCoinSymbol()));
+		}
+
+		@Override
+		public void mouseEntered(java.awt.event.MouseEvent e)
+		{
+		}
+
+		@Override
+		public void mouseExited(java.awt.event.MouseEvent e)
+		{	
+		}
+
+		@Override
+		public void mousePressed(java.awt.event.MouseEvent e)
+		{	
+		}
+
+		@Override
+		public void mouseReleased(java.awt.event.MouseEvent e)
+		{
 		}
 	}
 	
@@ -1912,6 +2119,46 @@ public class GUI extends JFrame
 		}
 
 	}
+	
+	class TableListener_TradeHistory implements MouseListener
+	{
+
+		@Override
+		public void mouseClicked(java.awt.event.MouseEvent e)
+		{
+			JTable table = (JTable) e.getSource();
+			
+			if (table.getSelectedColumn() == 7)
+			{
+				int select = table.getSelectedRow();
+				
+				TradeHistoryTableElement element = tradeHistoryTableElements.get(select);
+				
+				upbit.cancelOrder(element.getOrder().getId());
+				updateTradeHistoryTable();
+			}
+		}
+
+		@Override
+		public void mouseEntered(java.awt.event.MouseEvent e)
+		{
+		}
+
+		@Override
+		public void mouseExited(java.awt.event.MouseEvent e)
+		{
+		}
+
+		@Override
+		public void mousePressed(java.awt.event.MouseEvent e)
+		{
+		}
+
+		@Override
+		public void mouseReleased(java.awt.event.MouseEvent e)
+		{
+		}	
+	}
 
 	class TabListener implements ChangeListener
 	{
@@ -1933,18 +2180,18 @@ public class GUI extends JFrame
 				break;
 				
 			case 1:
-				setCurrentMarket(Market.BTC);
-				setSelection(table_BTC, 0, 0);
+//				setCurrentMarket(Market.BTC);
+//				setSelection(table_BTC, 0, 0);
 				break;
 				
 			case 2:
-				setCurrentMarket(Market.ETH);
-				setSelection(table_ETH, 0, 0);
+//				setCurrentMarket(Market.ETH);
+//				setSelection(table_ETH, 0, 0);
 				break;
 				
 			case 3:
 				setCurrentMarket(Market.KRW);
-				setSelection(table_MyCoin, 0, 0);
+//				setSelection(table_MyCoin, 0, 0);
 				break;
 			}
 		}	

@@ -1,11 +1,12 @@
 package upbit;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import upbit.CoinList.CoinSymbol;
 import upbit.CoinList.Market;
 
-public class TradeHistory
+public class TradeHistory implements Serializable
 {
 	public enum TradeType
 	{

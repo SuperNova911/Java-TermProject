@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -34,6 +35,7 @@ public class Upbit
 	private DynamicCrawler crawler;
 	private Account account;
 	private GUI gui;
+	private SaveManager saveManager;
 	
 	private ScheduledThreadPoolExecutor scheduledExecutor;
 	private ExecutorService executorService; 
@@ -48,19 +50,19 @@ public class Upbit
 		
 		cryptoList = new ArrayList<CryptoCurrency>();
 		orderBookList = new ArrayList<OrderBook>();
-
-		loadCryptoCurrency();
 	}
 	
 	public void initiate()
 	{
+		loadCryptoCurrency();
 		autoUpdate();
+
+		//saveManager.manualSave();
 	}
 	
 	public void autoUpdate()
 	{
 		ScheduledThreadPoolExecutor executor = getScheduledExecutor();
-		Market market = Market.KRW;
 
 		int updateDelay = 5;
 		int startDelay = 60 - Calendar.getInstance().get(Calendar.SECOND) + 1;
@@ -74,22 +76,27 @@ public class Upbit
 
 		executor.scheduleAtFixedRate(() ->
 		{
-			gui.updateCoinTable(gui.getCurrentMarket());
-			gui.updateInfo(gui.getCurrentMarket(), gui.getCurrentCoinSymbol());
+			gui.updateCoinTable();
+			gui.updateMyCoinTable();
+			gui.updateTradeHistoryTable();
+			gui.updateInfo();
+			gui.updateAsset();
+			confirmOrder();
 		}, 3, updateDelay, TimeUnit.SECONDS);
 
 		executor.scheduleAtFixedRate(() ->
 		{
 			if (crawler.isReady())
+			{
+				gui.showOrderBook(true);
 				updateOrderBook(gui.getCurrentMarket(), gui.getCurrentCoinSymbol());
-			confirmOrder();
-			gui.updateTradeHistoryTable();
-			gui.updateMyCoinTable();
-		}, 0, updateDelay, TimeUnit.SECONDS);
+			}
+			
+		}, 0, 2, TimeUnit.SECONDS);
 
 		executor.scheduleAtFixedRate(() ->
 		{
-			updateData(gui.getCurrentMarket(), gui.getCurrentTermType(), gui.getCurrentTerm(), 3);
+			updateData(gui.getCurrentMarket(), gui.getCurrentTermType(), gui.getCurrentTerm(), 100);
 			gui.updateChart(gui.getCurrentMarket(), gui.getCurrentCoinSymbol(), gui.getCurrentTermType(), gui.getCurrentTerm(), 0, 99);
 		}, 3, updateDelay, TimeUnit.SECONDS);
 	}
@@ -213,27 +220,40 @@ public class Upbit
 			{
 				if (orderPrice >= tradePrice)
 				{
-					buy(order);
+					account.addBalance(order.getCoinSymbol(), order.getQuantity(), order.getTradePrice());
 					order.setQuantity_Conclusion(order.getQuantity());
 					order.setConclusion(true);
-					
-					System.out.println("Order confirmed");
 				}
 			}
 			else
 			{
 				if (orderPrice <= tradePrice)
 				{
-					sell(order);
+					switch (order.getMarket())
+					{
+					case KRW:
+						account.addKRW(Math.round(order.getTotalPrice()));
+						break;
+						
+					case BTC:
+						account.addBalance(CoinSymbol.BTC, order.getTotalPrice(), order.getTradePrice());
+						break;
+						
+					case ETH:
+						account.addBalance(CoinSymbol.ETH, order.getTotalPrice(), order.getTradePrice());
+						break;
+						
+					default:
+						return;
+					}
 					order.setQuantity_Conclusion(order.getQuantity());
 					order.setConclusion(true);
-
-					System.out.println("Order confirmed");
 				}
 			}
 		}
 		
 		gui.updateBuySell(true);
+		//saveManager.manualSave();
 	}
 	
 	public CryptoCurrency requestData(Market market, CoinSymbol coinSymbol, TermType termType, int term, int dataAmount) throws Exception
@@ -258,85 +278,119 @@ public class Upbit
 	{
 		Order order;
 		Date date = new Date();
+		
+		double balance;
+		UUID id = UUID.randomUUID();
+		
+		if (buy)
+		{
+			switch (market)
+			{
+			case KRW:
+				balance = account.getKRW() + 1;
+				break;
 
-		int id = 0;	// юс╫ц
+			case BTC:
+				balance = account.getBalance(CoinSymbol.BTC);
+				break;
+				
+			case ETH:
+				balance = account.getBalance(CoinSymbol.ETH);
+				break;
+				
+			default:
+				return;
+			}
+			
+			if (balance < tradePrice * quantity)
+				return;
+			
+			switch (market)
+			{
+			case KRW:
+				account.subtractKRW(Math.round(tradePrice * quantity));
+				break;
+
+			case BTC:
+				account.subtractBalance(CoinSymbol.BTC, tradePrice * quantity);
+				break;
+				
+			case ETH:
+				account.subtractBalance(CoinSymbol.BTC, tradePrice * quantity);
+				break;
+				
+			default:
+				return;
+			}
+		}
+		else
+		{
+			balance = account.getBalance(coinSymbol);
+			
+			if (balance < quantity)
+				return;
+			
+			account.subtractBalance(coinSymbol, quantity);
+		}
 
 		order = new Order(market, coinSymbol, id, date, tradePrice, quantity, buy);
 		
-		System.out.println(order.toString());
-		
 		account.getOrderList().add(order);
+		
+		confirmOrder();
+		//saveManager.manualSave();
 	}
 	
-
-	public boolean buy(Order order)
+	public void cancelOrder(UUID OrderID)
 	{
-		Market market = order.getMarket();
-		CoinSymbol coinSymbol = order.getCoinSymbol();
-		
-		double totalPrice = order.getTotalPrice();
-		double balance = 0;
-		
-		if (market == Market.KRW)
-			Math.round(totalPrice);
-		
-		switch (market)
+		for (Order order : account.getOrderList())
 		{
-		case KRW:
-			balance = account.getKRW();
-			account.subtractKRW((long) totalPrice);
-			break;
-			
-		case BTC:
-			balance = account.getBalance(CoinSymbol.BTC);
-			account.subtractBalance(CoinSymbol.BTC, totalPrice);
-			break;
-			
-		case ETH:
-			balance = account.getBalance(CoinSymbol.ETC);
-			account.subtractBalance(CoinSymbol.ETC, totalPrice);
-			break;
+			if (order.getId() == OrderID)
+			{
+				if (order.isBuy())
+				{
+					switch (order.getMarket())
+					{
+					case KRW:
+						account.addKRW(Math.round(order.getTotalPrice()));
+						break;
+						
+					case BTC:
+						account.addBalance(CoinSymbol.BTC, order.getQuantity(), account.searchWallet(CoinSymbol.BTC).getAveragePrice());
+						break;
+						
+					case ETH:
+						account.addBalance(CoinSymbol.ETH, order.getQuantity(), account.searchWallet(CoinSymbol.ETH).getAveragePrice());
+						break;
+
+					default:
+						return;
+					}
+					
+					account.getOrderList().remove(order);
+					return;
+				}
+				else
+				{
+					double tradePrice = 0;
+					
+					try
+					{
+						CryptoCurrency cryptoCurrency = getCryptoCurrency(createName(order.getMarket(), order.getCoinSymbol(), TermType.minutes, 1));
+						tradePrice = Double.parseDouble(cryptoCurrency.getData(JsonKey.tradePrice));
+					}
+					catch (Exception e)
+					{	
+					}
+					
+					account.addBalance(order.getCoinSymbol(), order.getQuantity(), tradePrice);
+					account.getOrderList().remove(order);
+					return;
+				}
+			}
 		}
-
-		account.addBalance(coinSymbol, order.getQuantity(), order.getTradePrice());
-		return true;
-	}
-	
-	public boolean sell(Order order)
-	{
-		Market market = order.getMarket();
-		CoinSymbol coinSymbol = order.getCoinSymbol();
-
-		double totalPrice = order.getTotalPrice();
-		double balance = account.getBalance(coinSymbol);
 		
-		if (market == Market.KRW)
-			Math.round(totalPrice);
-				
-		switch (market)
-		{
-		case KRW:
-			account.addKRW((long) totalPrice);
-			break;
-			
-		case BTC:
-			account.addBalance(coinSymbol, totalPrice, order.getTradePrice());
-			break;
-			
-		case ETH:
-			account.addBalance(coinSymbol, totalPrice, order.getTradePrice());
-			break;
-		}
-
-		account.subtractBalance(coinSymbol, order.getQuantity());
-		return true;
-		
-//		if (balance >= order.getQuantity())
-//		{
-//			return true;
-//		}
-//		
-//		return false;
+		//saveManager.manualSave();
 	}
 	
 	public double getTradePrice(Market market, CoinSymbol coinSymbol)
@@ -411,7 +465,7 @@ public class Upbit
 		return market + "-" + coinSymbol + "-" + termType + "-" + term;
 	}
 	
-	public double getVolume(Market market, CoinSymbol coinSymbol, int hours)
+	public double getVolumePrice(Market market, CoinSymbol coinSymbol, int hours)
 	{
 		CryptoCurrency cryptoCurrency;
 		double volume = 0;
@@ -440,6 +494,53 @@ public class Upbit
 
 		return volume;
 	}
+
+	public void updateStat()
+	{
+		CryptoCurrency cryptoCurrency;
+		Stat stat = account.getStat();
+		
+		double assetValue, earnings, earningsRate, seed;
+		
+		seed = account.getStat().getSeed();
+		assetValue = 0;
+		
+		assetValue += account.getKRW();
+		
+		for (Wallet wallet : account.getWalletList())
+		{
+			try
+			{
+				cryptoCurrency = getCryptoCurrency(createName(Market.KRW, wallet.getCoinSymbol(), TermType.minutes, 1));
+			}
+			catch (Exception e)
+			{
+				try
+				{
+					cryptoCurrency = requestData(Market.KRW, wallet.getCoinSymbol(), TermType.minutes, 1, 1);
+				}
+				catch (Exception e1)
+				{
+					continue;
+				}
+			}
+			
+			assetValue += wallet.getBalance() * Double.parseDouble(cryptoCurrency.getData(JsonKey.tradePrice));
+		}
+
+		for (Order order : account.getOrderList())
+		{
+			if (order.isConclusion() == false)
+				assetValue += order.getTotalPrice();
+		}
+		
+		earnings = assetValue - seed;
+		earningsRate = (assetValue - seed) / seed * 100;
+		
+		stat.setAssetValue(assetValue);
+		stat.setEarningsRate(earningsRate);
+		stat.setEarnings(earnings);
+	}
 	
 	
 	// Getter, Setter
@@ -466,6 +567,11 @@ public class Upbit
 	public ArrayList<CryptoCurrency> getCryptoList()
 	{
 		return cryptoList;
+	}
+	
+	public void setCryptoList(ArrayList<CryptoCurrency> cryptoList)
+	{
+//		this.cryptoList = cryptoList;
 	}
 	
 	public GUI getGui()
@@ -516,5 +622,15 @@ public class Upbit
 	public void setExecutorService(ExecutorService executorService)
 	{
 		this.executorService = executorService;
+	}
+
+	public SaveManager getSaveManager()
+	{
+		return saveManager;
+	}
+
+	public void setSaveManager(SaveManager saveManager)
+	{
+		this.saveManager = saveManager;
 	}
 }
