@@ -8,6 +8,7 @@ import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 
+@SuppressWarnings("serial")
 public class CustomCellRenderer_MyCoinTable extends DefaultTableCellRenderer
 {
 	@Override
@@ -20,6 +21,14 @@ public class CustomCellRenderer_MyCoinTable extends DefaultTableCellRenderer
 		String str;
 		double num;
 		Color color;
+		
+		
+		str = table.getValueAt(row, 3).toString();
+		str = str.substring(str.indexOf("<br/>") + 5, str.indexOf("</html>"));
+		str = str.replaceAll(",", "");
+		num = Double.parseDouble(str);
+		
+		color = getColor(num);
 		
 		switch (column)
 		{
@@ -38,11 +47,28 @@ public class CustomCellRenderer_MyCoinTable extends DefaultTableCellRenderer
 			break;
 			
 		case 3:
-			c.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 12));
+			c.setForeground(color);
+			c.setFont(new Font("¸¼Àº °íµñ", Font.BOLD, 11));
 			setHorizontalAlignment(SwingConstants.RIGHT);
 			break;
 		}
 
 		return c;
+	}
+	
+	public Color getColor(double num)
+	{
+		if (num > 0)
+		{
+			return Color.RED;
+		}
+		else if (num < 0)
+		{
+			return Color.BLUE;
+		}
+		else
+		{
+			return Color.BLACK;
+		}
 	}
 }
