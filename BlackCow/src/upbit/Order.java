@@ -1,16 +1,18 @@
 package upbit;
 
+import java.io.Serializable;
 import java.util.Date;
+import java.util.UUID;
 
 import upbit.CoinList.CoinSymbol;
 import upbit.CoinList.Market;
 
-public class Order
+public class Order implements Serializable
 {
 	private Market market;
 	private CoinSymbol coinSymbol;
 	private Date date;
-	private int id;
+	private UUID id;
 	private double tradePrice;
 	private double quantity;
 	private double quantity_Conclusion;
@@ -27,7 +29,7 @@ public class Order
 	 * @param quantity 주문수량
 	 * @param buy 거래종류
 	 */
-	public Order(Market market, CoinSymbol coinSymbol, int id, Date date, double tradePrice, double quantity, boolean buy)
+	public Order(Market market, CoinSymbol coinSymbol, UUID id, Date date, double tradePrice, double quantity, boolean buy)
 	{
 		this.market = market;
 		this.coinSymbol = coinSymbol;
@@ -71,12 +73,12 @@ public class Order
 		this.coinSymbol = coinSymbol;
 	}
 
-	public int getId()
+	public UUID getId()
 	{
 		return id;
 	}
 
-	public void setId(int id)
+	public void setId(UUID id)
 	{
 		this.id = id;
 	}
