@@ -30,7 +30,11 @@ public class CoinTableElement
 		Object[] data = new Object[4];
 		DecimalFormat decimalFormat;
 		
-		data[0] = name;
+		data[0] = "<html>";
+		data[0] += name;
+		data[0] += "<br/>";
+		data[0] += coinSymbol.toString();
+		data[0] += "</html>";
 		
 		decimalFormat = new DecimalFormat("#,##0.########");
 		data[1] = decimalFormat.format(tradePrice);
