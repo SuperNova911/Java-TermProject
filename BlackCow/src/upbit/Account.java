@@ -1,25 +1,27 @@
 package upbit;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import upbit.CoinList.CoinSymbol;
 
-public class Account
+public class Account implements Serializable
 {
 	private ArrayList<Wallet> walletList;
 	private ArrayList<Order> orderList;
 	private ArrayList<TradeHistory> tradeHistoryList;
+	
+	private Stat stat;
 	
 	private String id;
 	private String password;
 	private long KRW;
 	
 	
-	
 	// 로그인 기능 구현
 	public Account(String id, String password, long KRW)
 	{
-		this.id = id;
+		this.setId(id);
 		this.password = password;
 		this.KRW = KRW;
 
@@ -62,9 +64,7 @@ public class Account
 			if (wallet.getCoinSymbol() == coinSymbol)
 				return wallet;
 		}
-		
-//		System.out.println("Failed to searchWallet: " + coinSymbol);
-		
+
 		return null;
 	}
 	
@@ -89,7 +89,6 @@ public class Account
 		}
 		else
 		{
-			System.out.println("Create new wallet :" + coinSymbol);
 			addWallet(new Wallet(coinSymbol, balance, buyPrice));
 		}
 	}
@@ -121,6 +120,14 @@ public class Account
 	{
 		this.KRW -= KRW;
 	}
+	
+	@Override
+	public String toString()
+	{
+		return "Account [walletList=" + walletList + ", orderList=" + orderList + ", tradeHistoryList="
+				+ tradeHistoryList + ", stat=" + stat + ", id=" + getId() + ", password=" + password + ", KRW=" + KRW + "]";
+	}
+
 	
 	
 	//Getter, Setter
@@ -170,5 +177,25 @@ public class Account
 	public void setTradeHistoryList(ArrayList<TradeHistory> tradeHistoryList)
 	{
 		this.tradeHistoryList = tradeHistoryList;
+	}
+
+	public Stat getStat()
+	{
+		return stat;
+	}
+
+	public void setStat(Stat stat)
+	{
+		this.stat = stat;
+	}
+
+	public String getId()
+	{
+		return id;
+	}
+
+	public void setId(String id)
+	{
+		this.id = id;
 	}
 }
